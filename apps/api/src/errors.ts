@@ -9,7 +9,7 @@ export interface ErrorMapper {
 export function errorMapper(err: unknown, errorMapper?: ErrorMapper): never {
 	if (err instanceof DrizzleQueryError) {
 		if (err.cause instanceof SQL.PostgresError) {
-			if (err.cause.code === "23505") {
+			if (err.cause.errno === "23505") {
 				throw errorMapper?.onConflict?.() ?? status(409);
 			}
 		}
