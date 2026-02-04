@@ -1,0 +1,26 @@
+{
+	"compilerOptions": {
+		"allowImportingTsExtensions": true,
+		"allowJs": true,
+		"jsx": "react-jsx",
+		"lib": [
+			"ESNext"
+		],
+		"module": "Preserve",
+		"moduleDetection": "force",
+		"moduleResolution": "bundler",
+		"noEmit": true,
+		"noFallthroughCasesInSwitch": true,
+		"noImplicitOverride": true,
+		"noUncheckedIndexedAccess": true,
+		"skipLibCheck": true,
+		"strict": true,
+		"target": "ESNext",
+		"verbatimModuleSyntax": true,
+		"paths": {
+			"@/*": [
+				"./src/*"
+			]
+		}
+	}
+}

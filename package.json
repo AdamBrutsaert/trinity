@@ -1,0 +1,11 @@
+{
+  "name": "trinity",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "^2.3.14"
+  }
+}
