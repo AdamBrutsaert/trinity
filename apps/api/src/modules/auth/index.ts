@@ -1,17 +1,15 @@
 import Elysia from "elysia";
-import { AuthModel } from "./model";
-import { Auth } from "./service";
+import * as models from "./model";
+import * as service from "./service";
 
 export const auth = new Elysia({ prefix: "/auth" }).post(
 	"/login",
-	async ({ body }) => {
-		return await Auth.login(body);
-	},
+	async ({ body }) => service.login(body),
 	{
-		body: AuthModel.loginBody,
+		body: models.loginBody,
 		response: {
-			200: AuthModel.loginResponse,
-			401: AuthModel.loginInvalid,
+			200: models.loginResponse,
+			401: models.loginInvalid,
 		},
 	},
 );
