@@ -57,7 +57,16 @@ echo ""
 
 echo -e "${BLUE}Démarrage d'Expo...${NC}"
 cd mobile
-npm install > /dev/null 2>&1
+
+if [ ! -d "node_modules" ]; then
+    if [ -f "package-lock.json" ]; then
+        npm ci > /dev/null 2>&1
+    else
+        npm install > /dev/null 2>&1
+    fi
+else
+    npm install > /dev/null 2>&1
+fi
 
 sed -i "s|http://localhost:3000|http://${LOCAL_IP}:3000|g" src/config/api.js
 
