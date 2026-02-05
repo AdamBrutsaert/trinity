@@ -1,8 +1,13 @@
 import { openapi } from "@elysiajs/openapi";
+import { cors } from "@elysiajs/cors";
 import { Elysia } from "elysia";
 import { auth } from "./modules/auth";
 
 const app = new Elysia()
+	.use(cors({
+		origin: true,
+		credentials: true,
+	}))
 	.use(
 		openapi({
 			documentation: {
@@ -15,7 +20,10 @@ const app = new Elysia()
 		}),
 	)
 	.use(auth)
-	.listen(3000);
+	.listen({
+		port: 3000,
+		hostname: "0.0.0.0",
+	});
 
 console.log(
 	`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
