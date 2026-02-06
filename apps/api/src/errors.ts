@@ -1,20 +1,26 @@
 import { SQL } from "bun";
 import { DrizzleQueryError } from "drizzle-orm";
-import { status } from "elysia";
 
-export interface ErrorMapper {
-	onConflict?: () => unknown;
+export interface ErrorMapper<T> {
+	onConflict?: () => T;
+	default: () => T;
 }
 
-export function errorMapper(err: unknown, errorMapper?: ErrorMapper): never {
+export function errorMapper<T>(err: unknown, errorMapper: ErrorMapper<T>) {
 	if (err instanceof DrizzleQueryError) {
 		if (err.cause instanceof SQL.PostgresError) {
 			if (err.cause.errno === "23505") {
-				throw errorMapper?.onConflict?.() ?? status(409);
+				if (errorMapper.onConflict) {
+					return errorMapper.onConflict();
+				}
 			}
 		}
 	}
 
 	console.error("Unhandled error:", err);
-	throw status(500);
+	return errorMapper.default();
+}
+
+export function assertNever(_x: never): never {
+	throw new Error("Unexpected path");
 }

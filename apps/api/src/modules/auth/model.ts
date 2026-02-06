@@ -37,3 +37,6 @@ export type loginResponse = typeof loginResponse.static;
 
 export const loginInvalid = t.Literal("Invalid email or password");
 export type loginInvalid = typeof loginInvalid.static;
+
+export const loginFailed = t.Literal("Failed to fetch user");
+export type loginFailed = typeof loginFailed.static;

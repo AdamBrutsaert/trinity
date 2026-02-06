@@ -1,4 +1,5 @@
 import { db } from "@/db";
+import { assertNever } from "@/errors";
 import Elysia, { status } from "elysia";
 import * as models from "./model";
 import * as service from "./service";
@@ -6,7 +7,28 @@ import * as service from "./service";
 export const auth = new Elysia({ prefix: "/auth" })
 	.post(
 		"/register",
-		async ({ body }) => status(201, await service.register(db, body)),
+		async ({ body }) => {
+			const result = await db.transaction((tx) => service.register(tx, body));
+			return result.match(
+				(res) => status(201, res),
+				(err) => {
+					switch (err.type) {
+						case "email_already_exists":
+							return status(
+								409,
+								"Email already exists" satisfies models.registerEmailExists,
+							);
+						case "failed_to_create_user":
+							return status(
+								500,
+								"Failed to create user" satisfies models.registerFailed,
+							);
+						default:
+							assertNever(err);
+					}
+				},
+			);
+		},
 		{
 			body: models.registerBody,
 			response: {
@@ -16,10 +38,36 @@ export const auth = new Elysia({ prefix: "/auth" })
 			},
 		},
 	)
-	.post("/login", async ({ body }) => service.login(db, body), {
-		body: models.loginBody,
-		response: {
-			200: models.loginResponse,
-			401: models.loginInvalid,
+	.post(
+		"/login",
+		async ({ body }) => {
+			const result = await db.transaction((tx) => service.login(tx, body));
+			return result.match(
+				(res) => status(200, res),
+				(err) => {
+					switch (err.type) {
+						case "invalid_email_or_password":
+							return status(
+								401,
+								"Invalid email or password" satisfies models.loginInvalid,
+							);
+						case "failed_to_fetch_user":
+							return status(
+								500,
+								"Failed to fetch user" satisfies models.loginFailed,
+							);
+						default:
+							assertNever(err);
+					}
+				},
+			);
 		},
-	});
+		{
+			body: models.loginBody,
+			response: {
+				200: models.loginResponse,
+				401: models.loginInvalid,
+				500: models.loginFailed,
+			},
+		},
+	);
