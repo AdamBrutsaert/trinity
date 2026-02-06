@@ -8,8 +8,8 @@ function registerRoute(database: DatabasePlugin) {
 	return new Elysia().use(database).post(
 		"/register",
 		async ({ body, database }) => {
-			const result = await database.transaction((tx) =>
-				service.register(tx, body),
+			const result = await database.transaction(
+				async (tx) => await service.register(tx, body),
 			);
 			return result.match(
 				(res) => status(201, res),
@@ -46,8 +46,8 @@ function loginRoute(database: DatabasePlugin) {
 	return new Elysia().use(database).post(
 		"/login",
 		async ({ body, database }) => {
-			const result = await database.transaction((tx) =>
-				service.login(tx, body),
+			const result = await database.transaction(
+				async (tx) => await service.login(tx, body),
 			);
 			return result.match(
 				(res) => status(200, res),

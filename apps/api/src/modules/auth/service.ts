@@ -1,10 +1,10 @@
 import { env } from "@/env";
 import { errorMapper } from "@/errors";
 import type { Database } from "@/modules/database";
-import { usersTable } from "@/modules/database/schema";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { errAsync, okAsync, ResultAsync } from "neverthrow";
+import { createUser } from "../user/service";
 import type * as models from "./model";
 
 function generateToken(userId: string, role: string) {
@@ -16,54 +16,10 @@ function generateToken(userId: string, role: string) {
 		.sign(new TextEncoder().encode(env.JWT_SECRET));
 }
 
-export type RegisterError =
-	| {
-			type: "email_already_exists";
-			email: string;
-	  }
-	| {
-			type: "failed_to_create_user";
-	  };
-
-export async function register(tx: Database, params: models.registerBody) {
-	const hashedPassword = await bcrypt.hash(params.password, 10);
-
-	return ResultAsync.fromPromise(
-		tx
-			.insert(usersTable)
-			.values({
-				email: params.email,
-				passwordHash: hashedPassword,
-				firstName: params.firstName,
-				lastName: params.lastName,
-				phoneNumber: params.phoneNumber,
-				address: params.address,
-				zipCode: params.zipCode,
-				city: params.city,
-				country: params.country,
-			})
-			.returning({ id: usersTable.id, role: usersTable.role }),
-		(err) =>
-			errorMapper<RegisterError>(err, {
-				onConflict: () => ({
-					type: "email_already_exists",
-					email: params.email,
-				}),
-				default: () => ({
-					type: "failed_to_create_user",
-				}),
-			}),
-	)
-		.andThen((res) => {
-			const user = res[0];
-			if (!user) {
-				return errAsync({
-					type: "failed_to_create_user",
-				} satisfies RegisterError as RegisterError);
-			}
-			return okAsync(user);
-		})
-		.map(async (user) => ({ token: await generateToken(user.id, user.role) }));
+export function register(tx: Database, params: models.registerBody) {
+	return createUser(tx, params).map(async (user) => ({
+		token: await generateToken(user.id, user.role),
+	}));
 }
 
 export type LoginError =
@@ -74,7 +30,7 @@ export type LoginError =
 			type: "failed_to_fetch_user";
 	  };
 
-export async function login(tx: Database, params: models.loginBody) {
+export function login(tx: Database, params: models.loginBody) {
 	return ResultAsync.fromPromise(
 		tx.query.usersTable.findFirst({
 			where: (usersTable, { eq }) => eq(usersTable.email, params.email),
