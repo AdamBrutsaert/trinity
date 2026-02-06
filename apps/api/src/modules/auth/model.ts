@@ -40,3 +40,9 @@ export type loginInvalid = typeof loginInvalid.static;
 
 export const loginFailed = t.Literal("Failed to fetch user");
 export type loginFailed = typeof loginFailed.static;
+
+export const unauthorized = t.Literal("Unauthorized");
+export type unauthorized = typeof unauthorized.static;
+
+export const forbidden = t.Literal("Forbidden");
+export type forbidden = typeof forbidden.static;

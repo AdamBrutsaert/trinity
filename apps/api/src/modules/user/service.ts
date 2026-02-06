@@ -30,6 +30,7 @@ export function createUser(tx: Database, params: models.createUserBody) {
 						zipCode: params.zipCode,
 						city: params.city,
 						country: params.country,
+						role: params.role,
 					})
 					.returning({
 						id: usersTable.id,

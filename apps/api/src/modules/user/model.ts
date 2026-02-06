@@ -30,6 +30,7 @@ export const createUserBody = t.Object({
 	zipCode: t.Optional(t.String({ maxLength: 20 })),
 	city: t.Optional(t.String({ maxLength: 100 })),
 	country: t.Optional(t.String({ maxLength: 100 })),
+	role: t.UnionEnum(["customer", "admin"]),
 });
 export type createUserBody = typeof createUserBody.static;
 

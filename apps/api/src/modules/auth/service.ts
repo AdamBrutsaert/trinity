@@ -2,12 +2,12 @@ import { env } from "@/env";
 import { errorMapper } from "@/errors";
 import type { Database } from "@/modules/database";
 import bcrypt from "bcryptjs";
-import { SignJWT } from "jose";
+import { jwtVerify, SignJWT } from "jose";
 import { errAsync, okAsync, ResultAsync } from "neverthrow";
 import { createUser } from "../user/service";
 import type * as models from "./model";
 
-function generateToken(userId: string, role: string) {
+function generateToken(userId: string, role: "customer" | "admin") {
 	return new SignJWT({ userId, role })
 		.setProtectedHeader({ alg: "HS256" })
 		.setIssuedAt()
@@ -17,7 +17,7 @@ function generateToken(userId: string, role: string) {
 }
 
 export function register(tx: Database, params: models.registerBody) {
-	return createUser(tx, params).map(async (user) => ({
+	return createUser(tx, { ...params, role: "customer" }).map(async (user) => ({
 		token: await generateToken(user.id, user.role),
 	}));
 }
@@ -61,4 +61,17 @@ export function login(tx: Database, params: models.loginBody) {
 			});
 		})
 		.map(async (user) => ({ token: await generateToken(user.id, user.role) }));
+}
+
+export function verifyToken(token: string) {
+	return ResultAsync.fromPromise(
+		jwtVerify<{ userId: string; role: "customer" | "admin" }>(
+			token,
+			new TextEncoder().encode(env.JWT_SECRET),
+			{
+				issuer: "trinity",
+			},
+		),
+		() => "invalid" as const,
+	);
 }
