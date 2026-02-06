@@ -1,7 +1,7 @@
-import type { Database } from "@/db";
-import { usersTable } from "@/db/schema";
 import { env } from "@/env";
 import { errorMapper } from "@/errors";
+import type { Database } from "@/modules/database";
+import { usersTable } from "@/modules/database/schema";
 import bcrypt from "bcryptjs";
 import { SignJWT } from "jose";
 import { errAsync, okAsync, ResultAsync } from "neverthrow";

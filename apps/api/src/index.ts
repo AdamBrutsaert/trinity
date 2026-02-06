@@ -1,13 +1,24 @@
-import { openapi } from "@elysiajs/openapi";
 import { cors } from "@elysiajs/cors";
+import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
-import { auth } from "./modules/auth";
+import { env } from "./env";
+import { createAuthModule } from "./modules/auth";
+import {
+	createDatabaseConnection,
+	createDatabasePlugin,
+} from "./modules/database";
+
+const databasePlugin = createDatabasePlugin(
+	createDatabaseConnection(env.DATABASE_URL),
+);
 
 const app = new Elysia()
-	.use(cors({
-		origin: true,
-		credentials: true,
-	}))
+	.use(
+		cors({
+			origin: true,
+			credentials: true,
+		}),
+	)
 	.use(
 		openapi({
 			documentation: {
@@ -19,7 +30,7 @@ const app = new Elysia()
 			},
 		}),
 	)
-	.use(auth)
+	.use(createAuthModule(databasePlugin))
 	.listen({
 		port: 3000,
 		hostname: "0.0.0.0",

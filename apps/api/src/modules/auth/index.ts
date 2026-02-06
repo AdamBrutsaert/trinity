@@ -1,14 +1,16 @@
-import { db } from "@/db";
 import { assertNever } from "@/errors";
 import Elysia, { status } from "elysia";
+import type { DatabasePlugin } from "../database";
 import * as models from "./model";
 import * as service from "./service";
 
-export const auth = new Elysia({ prefix: "/auth" })
-	.post(
+function registerRoute(database: DatabasePlugin) {
+	return new Elysia().use(database).post(
 		"/register",
-		async ({ body }) => {
-			const result = await db.transaction((tx) => service.register(tx, body));
+		async ({ body, database }) => {
+			const result = await database.transaction((tx) =>
+				service.register(tx, body),
+			);
 			return result.match(
 				(res) => status(201, res),
 				(err) => {
@@ -37,11 +39,16 @@ export const auth = new Elysia({ prefix: "/auth" })
 				500: models.registerFailed,
 			},
 		},
-	)
-	.post(
+	);
+}
+
+function loginRoute(database: DatabasePlugin) {
+	return new Elysia().use(database).post(
 		"/login",
-		async ({ body }) => {
-			const result = await db.transaction((tx) => service.login(tx, body));
+		async ({ body, database }) => {
+			const result = await database.transaction((tx) =>
+				service.login(tx, body),
+			);
 			return result.match(
 				(res) => status(200, res),
 				(err) => {
@@ -71,3 +78,10 @@ export const auth = new Elysia({ prefix: "/auth" })
 			},
 		},
 	);
+}
+
+export function createAuthModule(database: DatabasePlugin) {
+	return new Elysia({ prefix: "/auth" })
+		.use(registerRoute(database))
+		.use(loginRoute(database));
+}
