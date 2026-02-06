@@ -126,4 +126,10 @@ describe("User module", () => {
 			.get();
 		expect(userResponse.status).toBe(404);
 	});
+
+	it("should return 422 for invalid user ID", async () => {
+		const userResponse = await api.users({ id: "invalid-uuid" }).get();
+		console.log(userResponse);
+		expect(userResponse.status).toBe(422);
+	});
 });

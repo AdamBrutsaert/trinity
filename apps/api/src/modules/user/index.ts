@@ -1,6 +1,6 @@
 import { assertNever } from "@/errors";
 import type { DatabasePlugin } from "@/modules/database";
-import Elysia, { status } from "elysia";
+import Elysia, { status, t } from "elysia";
 import * as models from "./model";
 import * as service from "./service";
 
@@ -70,6 +70,9 @@ function getUserByIdRoute(database: DatabasePlugin) {
 			);
 		},
 		{
+			params: t.Object({
+				id: t.String({ format: "uuid" }),
+			}),
 			response: {
 				200: models.userResponse,
 				404: models.userNotFound,
