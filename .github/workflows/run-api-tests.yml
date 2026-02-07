@@ -1,0 +1,31 @@
+name: Run API tests
+
+on: [push]
+
+jobs:
+  test-api:
+    if: github.repository == 'AdamBrutsaert/trinity'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: apps/api
+        run: bun install
+
+      - name: Pull required images
+        run: |
+          docker pull postgres@sha256:c2820d612da95f7e03f07785878a4de220a53aaaeea351f0f2fa0a4a72ec4e50
+
+      - name: Run tests
+        working-directory: apps/api
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+          DOCKER_HOST: unix:///var/run/docker.sock
+        run: bun test
