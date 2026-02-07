@@ -56,21 +56,14 @@ echo -e "${GREEN}API démarrée sur http://${LOCAL_IP}:3000${NC}"
 echo ""
 
 echo -e "${BLUE}Démarrage d'Expo...${NC}"
-cd mobile
+cd apps/mobile
 
-if [ ! -d "node_modules" ]; then
-    if [ -f "package-lock.json" ]; then
-        npm ci > /dev/null 2>&1
-    else
-        npm install > /dev/null 2>&1
-    fi
-else
-    npm install > /dev/null 2>&1
-fi
+bun install > /dev/null 2>&1
 
-sed -i "s|http://localhost:3000|http://${LOCAL_IP}:3000|g" src/config/api.js
+# Force the mobile app to call the correct backend from Expo Go / physical devices
+export EXPO_PUBLIC_API_BASE_URL="http://${LOCAL_IP}:3000"
 
-npx expo start &
+bun run start &
 EXPO_PID=$!
 cd ..
 
