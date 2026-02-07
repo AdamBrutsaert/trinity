@@ -28,4 +28,6 @@ jobs:
         env:
           TESTCONTAINERS_RYUK_DISABLED: "true"
           DOCKER_HOST: unix:///var/run/docker.sock
-        run: bun test
+        run: |
+          cp .env.test .env
+          bun test
