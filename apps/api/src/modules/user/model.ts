@@ -21,8 +21,8 @@ export const failedToFetchUser = t.Literal("Failed to fetch user");
 export type failedToFetchUser = typeof failedToFetchUser.static;
 
 export const createUserBody = t.Object({
-	email: t.String({ maxLength: 255 }),
-	password: t.String({ maxLength: 255 }),
+	email: t.String({ format: "email", maxLength: 255 }),
+	password: t.String({ minLength: 8, maxLength: 255 }),
 	firstName: t.String({ maxLength: 100 }),
 	lastName: t.String({ maxLength: 100 }),
 	phoneNumber: t.Optional(t.String({ maxLength: 30 })),

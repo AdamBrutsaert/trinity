@@ -135,4 +135,71 @@ describe("Auth module", () => {
 		});
 		expect(loginResponse.status).toBe(401);
 	});
+
+	describe("Validation", () => {
+		it("should reject invalid email format on register", async () => {
+			const response = await api.auth.register.post({
+				email: "invalid-email",
+				password: "password123",
+				firstName: "John",
+				lastName: "Doe",
+			});
+			expect(response.status).toBe(422);
+		});
+
+		it("should accept valid email formats", async () => {
+			const validEmails = [
+				"user@example.com",
+				"user.name@example.com",
+				"user+tag@example.co.uk",
+			];
+
+			for (const email of validEmails) {
+				const response = await api.auth.register.post({
+					email,
+					password: "validsecurepassword123",
+					firstName: "John",
+					lastName: "Doe",
+				});
+				expect(response.status).toBe(201);
+			}
+		});
+
+		it("should reject password shorter than 8 characters on register", async () => {
+			const response = await api.auth.register.post({
+				email: "test@example.com",
+				password: "short",
+				firstName: "John",
+				lastName: "Doe",
+			});
+			expect(response.status).toBe(422);
+		});
+
+		it("should accept password with 8 or more characters", async () => {
+			const response = await api.auth.register.post({
+				email: "validpass@example.com",
+				password: "validpassword",
+				firstName: "John",
+				lastName: "Doe",
+			});
+			expect(response.status).toBe(201);
+			expect(response.data).toHaveProperty("token");
+		});
+
+		it("should reject invalid email format on login", async () => {
+			const response = await api.auth.login.post({
+				email: "invalid-email",
+				password: "password123",
+			});
+			expect(response.status).toBe(422);
+		});
+
+		it("should reject password shorter than 8 characters on login", async () => {
+			const response = await api.auth.login.post({
+				email: "test@example.com",
+				password: "short",
+			});
+			expect(response.status).toBe(422);
+		});
+	});
 });

@@ -1,8 +1,8 @@
 import { t } from "elysia";
 
 export const registerBody = t.Object({
-	email: t.String({ maxLength: 255 }),
-	password: t.String({ maxLength: 255 }),
+	email: t.String({ format: "email", maxLength: 255 }),
+	password: t.String({ minLength: 8, maxLength: 255 }),
 	firstName: t.String({ maxLength: 100 }),
 	lastName: t.String({ maxLength: 100 }),
 	phoneNumber: t.Optional(t.String({ maxLength: 30 })),
@@ -25,8 +25,8 @@ export const registerFailed = t.Literal("Failed to create user");
 export type registerFailed = typeof registerFailed.static;
 
 export const loginBody = t.Object({
-	email: t.String({ maxLength: 255 }),
-	password: t.String({ maxLength: 255 }),
+	email: t.String({ format: "email", maxLength: 255 }),
+	password: t.String({ minLength: 8, maxLength: 255 }),
 });
 export type loginBody = typeof loginBody.static;
 
