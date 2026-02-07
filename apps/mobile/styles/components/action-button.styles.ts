@@ -15,6 +15,8 @@ export const styles = StyleSheet.create({
     borderRadius: 12,
     backgroundColor: '#111',
     marginBottom: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   actionTitle: {
     fontWeight: '900',
