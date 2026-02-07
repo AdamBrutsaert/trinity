@@ -18,12 +18,12 @@ function registerRoute(database: DatabasePlugin) {
 						case "email_already_exists":
 							return status(
 								409,
-								"Email already exists" satisfies models.registerEmailExists,
+								"Email already exists" satisfies models.emailAlreadyExists,
 							);
 						case "failed_to_create_user":
 							return status(
 								500,
-								"Failed to create user" satisfies models.registerFailed,
+								"Failed to create user" satisfies models.failedToCreateUser,
 							);
 						default:
 							assertNever(err);
@@ -35,8 +35,8 @@ function registerRoute(database: DatabasePlugin) {
 			body: models.registerBody,
 			response: {
 				201: models.registerResponse,
-				409: models.registerEmailExists,
-				500: models.registerFailed,
+				409: models.emailAlreadyExists,
+				500: models.failedToCreateUser,
 			},
 		},
 	);

@@ -1,7 +1,8 @@
 import { assertNever } from "@/errors";
 import { auth } from "@/modules/auth/macro";
 import type { DatabasePlugin } from "@/modules/database";
-import Elysia, { status, t } from "elysia";
+import Elysia, { status } from "elysia";
+import * as z from "zod";
 import * as models from "./model";
 import * as service from "./service";
 
@@ -16,7 +17,12 @@ function createUserRoute(database: DatabasePlugin) {
 					return await service.createUser(tx, body);
 				});
 				return result.match(
-					(res) => status(201, res),
+					(res) =>
+						status(201, {
+							...res,
+							createdAt: res.createdAt.toISOString(),
+							updatedAt: res.updatedAt.toISOString(),
+						}),
 					(err) => {
 						switch (err.type) {
 							case "email_already_exists":
@@ -58,7 +64,12 @@ function getUserByIdRoute(database: DatabasePlugin) {
 					async (tx) => await service.getUserById(tx, params.id),
 				);
 				return result.match(
-					(res) => status(200, res),
+					(res) =>
+						status(200, {
+							...res,
+							createdAt: res.createdAt.toISOString(),
+							updatedAt: res.updatedAt.toISOString(),
+						}),
 					(err) => {
 						switch (err.type) {
 							case "user_not_found":
@@ -79,8 +90,8 @@ function getUserByIdRoute(database: DatabasePlugin) {
 			},
 			{
 				admin: true,
-				params: t.Object({
-					id: t.String({ format: "uuid" }),
+				params: z.object({
+					id: z.uuidv4(),
 				}),
 				response: {
 					200: models.userResponse,

@@ -1,41 +1,43 @@
-import { t } from "elysia";
+import * as z from "zod";
 
-export const userResponse = t.Object({
-	id: t.String(),
-	email: t.String(),
-	firstName: t.String(),
-	lastName: t.String(),
-	phoneNumber: t.Nullable(t.String()),
-	address: t.Nullable(t.String()),
-	zipCode: t.Nullable(t.String()),
-	city: t.Nullable(t.String()),
-	country: t.Nullable(t.String()),
-	role: t.UnionEnum(["customer", "admin"]),
+export const userResponse = z.object({
+	id: z.string(),
+	email: z.string(),
+	firstName: z.string(),
+	lastName: z.string(),
+	phoneNumber: z.string().nullable(),
+	address: z.string().nullable(),
+	zipCode: z.string().nullable(),
+	city: z.string().nullable(),
+	country: z.string().nullable(),
+	role: z.enum(["customer", "admin"]),
+	createdAt: z.iso.datetime(),
+	updatedAt: z.iso.datetime(),
 });
-export type userResponse = typeof userResponse.static;
+export type userResponse = z.infer<typeof userResponse>;
 
-export const userNotFound = t.Literal("User not found");
-export type userNotFound = typeof userNotFound.static;
+export const userNotFound = z.literal("User not found");
+export type userNotFound = z.infer<typeof userNotFound>;
 
-export const failedToFetchUser = t.Literal("Failed to fetch user");
-export type failedToFetchUser = typeof failedToFetchUser.static;
+export const failedToFetchUser = z.literal("Failed to fetch user");
+export type failedToFetchUser = z.infer<typeof failedToFetchUser>;
 
-export const createUserBody = t.Object({
-	email: t.String({ maxLength: 255 }),
-	password: t.String({ maxLength: 255 }),
-	firstName: t.String({ maxLength: 100 }),
-	lastName: t.String({ maxLength: 100 }),
-	phoneNumber: t.Optional(t.String({ maxLength: 30 })),
-	address: t.Optional(t.String()),
-	zipCode: t.Optional(t.String({ maxLength: 20 })),
-	city: t.Optional(t.String({ maxLength: 100 })),
-	country: t.Optional(t.String({ maxLength: 100 })),
-	role: t.UnionEnum(["customer", "admin"]),
+export const createUserBody = z.object({
+	email: z.email().max(255),
+	password: z.string().min(8).max(255),
+	firstName: z.string().max(100),
+	lastName: z.string().max(100),
+	phoneNumber: z.string().max(30).optional(),
+	address: z.string().optional(),
+	zipCode: z.string().max(20).optional(),
+	city: z.string().max(100).optional(),
+	country: z.string().max(100).optional(),
+	role: z.enum(["customer", "admin"]),
 });
-export type createUserBody = typeof createUserBody.static;
+export type createUserBody = z.infer<typeof createUserBody>;
 
-export const emailAlreadyExists = t.Literal("Email already exists");
-export type emailAlreadyExists = typeof emailAlreadyExists.static;
+export const emailAlreadyExists = z.literal("Email already exists");
+export type emailAlreadyExists = z.infer<typeof emailAlreadyExists>;
 
-export const failedToCreateUser = t.Literal("Failed to create user");
-export type failedToCreateUser = typeof failedToCreateUser.static;
+export const failedToCreateUser = z.literal("Failed to create user");
+export type failedToCreateUser = z.infer<typeof failedToCreateUser>;

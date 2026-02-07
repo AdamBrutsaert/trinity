@@ -1,48 +1,48 @@
-import { t } from "elysia";
+import * as z from "zod";
 
-export const registerBody = t.Object({
-	email: t.String({ maxLength: 255 }),
-	password: t.String({ maxLength: 255 }),
-	firstName: t.String({ maxLength: 100 }),
-	lastName: t.String({ maxLength: 100 }),
-	phoneNumber: t.Optional(t.String({ maxLength: 30 })),
-	address: t.Optional(t.String()),
-	zipCode: t.Optional(t.String({ maxLength: 20 })),
-	city: t.Optional(t.String({ maxLength: 100 })),
-	country: t.Optional(t.String({ maxLength: 100 })),
+export const registerBody = z.object({
+	email: z.email().max(255),
+	password: z.string().min(8).max(255),
+	firstName: z.string().max(100),
+	lastName: z.string().max(100),
+	phoneNumber: z.string().max(30).optional(),
+	address: z.string().optional(),
+	zipCode: z.string().max(20).optional(),
+	city: z.string().max(100).optional(),
+	country: z.string().max(100).optional(),
 });
-export type registerBody = typeof registerBody.static;
+export type registerBody = z.infer<typeof registerBody>;
 
-export const registerResponse = t.Object({
-	token: t.String(),
+export const registerResponse = z.object({
+	token: z.string(),
 });
-export type registerResponse = typeof registerResponse.static;
+export type registerResponse = z.infer<typeof registerResponse>;
 
-export const registerEmailExists = t.Literal("Email already exists");
-export type registerEmailExists = typeof registerEmailExists.static;
+export const emailAlreadyExists = z.literal("Email already exists");
+export type emailAlreadyExists = z.infer<typeof emailAlreadyExists>;
 
-export const registerFailed = t.Literal("Failed to create user");
-export type registerFailed = typeof registerFailed.static;
+export const failedToCreateUser = z.literal("Failed to create user");
+export type failedToCreateUser = z.infer<typeof failedToCreateUser>;
 
-export const loginBody = t.Object({
-	email: t.String({ maxLength: 255 }),
-	password: t.String({ maxLength: 255 }),
+export const loginBody = z.object({
+	email: z.email().max(255),
+	password: z.string().min(8).max(255),
 });
-export type loginBody = typeof loginBody.static;
+export type loginBody = z.infer<typeof loginBody>;
 
-export const loginResponse = t.Object({
-	token: t.String(),
+export const loginResponse = z.object({
+	token: z.string(),
 });
-export type loginResponse = typeof loginResponse.static;
+export type loginResponse = z.infer<typeof loginResponse>;
 
-export const loginInvalid = t.Literal("Invalid email or password");
-export type loginInvalid = typeof loginInvalid.static;
+export const loginInvalid = z.literal("Invalid email or password");
+export type loginInvalid = z.infer<typeof loginInvalid>;
 
-export const loginFailed = t.Literal("Failed to fetch user");
-export type loginFailed = typeof loginFailed.static;
+export const loginFailed = z.literal("Failed to fetch user");
+export type loginFailed = z.infer<typeof loginFailed>;
 
-export const unauthorized = t.Literal("Unauthorized");
-export type unauthorized = typeof unauthorized.static;
+export const userUnauthorized = z.literal("Unauthorized");
+export type userUnauthorized = z.infer<typeof userUnauthorized>;
 
-export const forbidden = t.Literal("Forbidden");
-export type forbidden = typeof forbidden.static;
+export const userForbidden = z.literal("Forbidden");
+export type userForbidden = z.infer<typeof userForbidden>;

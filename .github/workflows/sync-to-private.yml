@@ -1,0 +1,23 @@
+name: Sync to private repo
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout public repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Push to private repo
+        env:
+          TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
+        run: |
+          git remote add private https://EpitechPGE45-2025:${TOKEN}@github.com/EpitechPGE45-2025/G-DER-800-PAR-8-1-derogdev801-1.git
+          git push private main:main --force

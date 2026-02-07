@@ -43,6 +43,8 @@ export function createUser(tx: Database, params: models.createUserBody) {
 						city: usersTable.city,
 						country: usersTable.country,
 						role: usersTable.role,
+						createdAt: usersTable.createdAt,
+						updatedAt: usersTable.updatedAt,
 					}),
 				(err) =>
 					errorMapper<CreateUserError>(err, {
@@ -91,6 +93,8 @@ export function getUserById(tx: Database, id: string) {
 				city: true,
 				country: true,
 				role: true,
+				createdAt: true,
+				updatedAt: true,
 			},
 		}),
 		(err) =>
