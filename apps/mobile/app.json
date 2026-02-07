@@ -27,7 +27,18 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
-      "expo-router",
+      [
+        "expo-router",
+        {
+          "root": "./screens"
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Trinity to access your camera to scan product barcodes."
+        }
+      ],
       [
         "expo-splash-screen",
         {
@@ -42,7 +53,7 @@
       ]
     ],
     "experiments": {
-      "typedRoutes": true,
+      "typedRoutes": false,
       "reactCompiler": true
     }
   }
