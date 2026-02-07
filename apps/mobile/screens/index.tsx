@@ -85,7 +85,7 @@ export default function HomeScreen() {
         key: 'cart',
         title: 'Cart',
         subtitle: 'View',
-        onPress: () => comingSoon('View cart'),
+        onPress: () => router.push('/cart'),
         Icon: CartIcon,
         iconColor: '#fff',
       },
