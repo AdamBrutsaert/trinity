@@ -19,5 +19,6 @@ jobs:
         env:
           TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
         run: |
+          echo "Token length: ${#TOKEN}"
           git remote add private https://AdamBrutsaert:${TOKEN}@github.com/EpitechPGE45-2025/G-DER-800-PAR-8-1-derogdev801-1.git
           git push private main:main --force
