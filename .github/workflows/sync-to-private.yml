@@ -1,23 +1,21 @@
 name: Sync to private repo
 
-on:
-  push:
-    branches:
-      - main
+on: [push, pull_request]
+
+env:
+  PRIVATE_REPOSITORY_URL: "git@github.com:EpitechPGE45-2025/G-DER-800-PAR-8-1-derogdev801-1.git"
 
 jobs:
   sync:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout public repo
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Push to private repo
-        env:
-          TOKEN: ${{ secrets.PRIVATE_REPO_TOKEN }}
-        run: |
-          git remote add private https://EpitechPGE45-2025:${TOKEN}@github.com/EpitechPGE45-2025/G-DER-800-PAR-8-1-derogdev801-1.git
-          git push private main:main --force
+      - name: Push to private repository
+        uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: ${{ env.PRIVATE_REPOSITORY_URL }}
+          ssh_private_key: ${{ secrets.GIT_SSH_PRIVATE_KEY }}
