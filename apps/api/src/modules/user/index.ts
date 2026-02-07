@@ -1,7 +1,8 @@
 import { assertNever } from "@/errors";
 import { auth } from "@/modules/auth/macro";
 import type { DatabasePlugin } from "@/modules/database";
-import Elysia, { status, t } from "elysia";
+import Elysia, { status } from "elysia";
+import * as z from "zod";
 import * as models from "./model";
 import * as service from "./service";
 
@@ -79,8 +80,8 @@ function getUserByIdRoute(database: DatabasePlugin) {
 			},
 			{
 				admin: true,
-				params: t.Object({
-					id: t.String({ format: "uuid" }),
+				params: z.object({
+					id: z.uuidv4(),
 				}),
 				response: {
 					200: models.userResponse,

@@ -1,6 +1,7 @@
 import { cors } from "@elysiajs/cors";
 import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
+import * as z from "zod";
 import { env } from "./env";
 import { createAuthModule } from "./modules/auth";
 import {
@@ -22,6 +23,9 @@ const app = new Elysia()
 	)
 	.use(
 		openapi({
+			mapJsonSchema: {
+				zod: z.toJSONSchema,
+			},
 			documentation: {
 				info: {
 					title: "Trinity API",
