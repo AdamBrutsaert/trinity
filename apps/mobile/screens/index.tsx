@@ -13,6 +13,10 @@ import { BottomDock } from '@/components/bottom-dock';
 import { HomeDealsRecommendationsSection } from '@/components/home-deals-recommendations-section';
 import { HomeHeader } from '@/components/home-header';
 import { HomeNotificationsSection } from '@/components/home-notifications-section';
+import AccountManagementIcon from '@/assets/svg/account-management.svg';
+import CartIcon from '@/assets/svg/cart.svg';
+import HistoryIcon from '@/assets/svg/history.svg';
+import ScanBarcodeIcon from '@/assets/svg/scan-barcode.svg';
 import { useAuth } from '@/features/auth/AuthContext';
 import { styles } from '@/styles/screens/home.styles';
 
@@ -74,24 +78,32 @@ export default function HomeScreen() {
         title: 'Scan',
         subtitle: 'Product',
         onPress: () => router.push('/scan'),
+        Icon: ScanBarcodeIcon,
+        iconColor: '#fff',
       },
       {
         key: 'cart',
         title: 'Cart',
         subtitle: 'View',
         onPress: () => comingSoon('View cart'),
+        Icon: CartIcon,
+        iconColor: '#fff',
       },
       {
         key: 'history',
         title: 'History',
         subtitle: 'Purchases',
         onPress: () => comingSoon('Purchase history'),
+        Icon: HistoryIcon,
+        iconColor: '#fff',
       },
       {
         key: 'account',
         title: 'Account',
         subtitle: 'Manage',
         onPress: () => comingSoon('Manage account'),
+        Icon: AccountManagementIcon,
+        iconColor: '#fff',
       },
     ],
     [comingSoon],
