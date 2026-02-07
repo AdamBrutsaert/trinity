@@ -11,6 +11,8 @@ export const userResponse = z.object({
 	city: z.string().nullable(),
 	country: z.string().nullable(),
 	role: z.enum(["customer", "admin"]),
+	createdAt: z.date(),
+	updatedAt: z.date(),
 });
 export type userResponse = z.infer<typeof userResponse>;
 

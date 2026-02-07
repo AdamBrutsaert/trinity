@@ -155,6 +155,8 @@ describe("User module", () => {
 		expect(response.data?.city).toBeNull();
 		expect(response.data?.country).toBeNull();
 		expect(response.data?.role).toBe("customer");
+		expect(response.data).toHaveProperty("createdAt");
+		expect(response.data).toHaveProperty("updatedAt");
 	});
 
 	it("should not create an user with an existing email", async () => {
