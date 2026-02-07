@@ -1,7 +1,10 @@
 import React from 'react';
 import { Text, TouchableOpacity, View, type LayoutChangeEvent } from 'react-native';
+import type { SvgProps } from 'react-native-svg';
 
 import { ActionButton } from '@/components/action-button';
+import CollapseActionsIcon from '@/assets/svg/collapse-actions.svg';
+import ShowActionsIcon from '@/assets/svg/show-actions.svg';
 import { styles } from '@/styles/components/bottom-dock.styles';
 
 export type BottomDockAction = {
@@ -9,6 +12,8 @@ export type BottomDockAction = {
   title: string;
   subtitle: string;
   onPress: () => void;
+  Icon?: React.ComponentType<SvgProps>;
+  iconColor?: string;
 };
 
 export function BottomDock({
@@ -26,6 +31,9 @@ export function BottomDock({
   paddingBottom: number;
   actions: BottomDockAction[];
 }) {
+  const ToggleIcon = collapsed ? ShowActionsIcon : CollapseActionsIcon;
+  const toggleIconColor = collapsed ? '#111' : '#fff';
+
   return (
     <View
       onLayout={onLayout}
@@ -38,9 +46,12 @@ export function BottomDock({
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         activeOpacity={0.85}
       >
-        <Text style={[styles.dockToggleText, collapsed ? styles.dockToggleTextCollapsed : null]}>
-          {collapsed ? 'Show actions' : 'Collapse'}
-        </Text>
+        <View style={styles.dockToggleContent}>
+          <ToggleIcon width={16} height={16} color={toggleIconColor} />
+          <Text style={[styles.dockToggleText, collapsed ? styles.dockToggleTextCollapsed : null]}>
+            {collapsed ? 'Show actions' : 'Collapse'}
+          </Text>
+        </View>
       </TouchableOpacity>
 
       {!collapsed ? (
@@ -51,6 +62,8 @@ export function BottomDock({
               title={action.title}
               subtitle={action.subtitle}
               onPress={action.onPress}
+              Icon={action.Icon}
+              iconColor={action.iconColor}
             />
           ))}
         </View>

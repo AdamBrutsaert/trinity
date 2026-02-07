@@ -29,6 +29,11 @@ export const styles = StyleSheet.create({
   dockToggleCollapsed: {
     backgroundColor: '#F1F1F5',
   },
+  dockToggleContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   dockToggleText: {
     fontWeight: '800',
     color: '#fff',
