@@ -93,7 +93,7 @@ export default function HomeScreen() {
         key: 'history',
         title: 'History',
         subtitle: 'Purchases',
-        onPress: () => comingSoon('Purchase history'),
+        onPress: () => router.push('/history'),
         Icon: HistoryIcon,
         iconColor: '#fff',
       },
