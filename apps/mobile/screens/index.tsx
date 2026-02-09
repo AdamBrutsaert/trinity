@@ -101,7 +101,7 @@ export default function HomeScreen() {
         key: 'account',
         title: 'Account',
         subtitle: 'Manage',
-        onPress: () => comingSoon('Manage account'),
+        onPress: () => router.push('/account-management'),
         Icon: AccountManagementIcon,
         iconColor: '#fff',
       },
