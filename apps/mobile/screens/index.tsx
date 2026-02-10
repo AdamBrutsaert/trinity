@@ -141,8 +141,8 @@ export default function HomeScreen() {
           <HomeDealsRecommendationsSection
             title="Deals & recommendations"
             recommendations={recommendations}
-            onPressDeals={() => comingSoon('Deals')}
-            onPressQuickPicks={() => comingSoon('Recommendations')}
+            onPressDeals={() => router.push({ pathname: '/deals', params: { open: 'promos' } })}
+            onPressQuickPicks={() => router.push({ pathname: '/deals', params: { open: 'forYou' } })}
             onPressRecommendation={(recommendation) => comingSoon(recommendation.title)}
           />
         </ScrollView>
