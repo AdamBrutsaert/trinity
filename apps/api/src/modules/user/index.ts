@@ -195,10 +195,55 @@ function updateUserRoute(database: DatabasePlugin) {
 		);
 }
 
+function deleteUserRoute(database: DatabasePlugin) {
+	return new Elysia()
+		.use(database)
+		.use(auth)
+		.delete(
+			"/:id",
+			async ({ params, database }) => {
+				const result = await database.transaction(async (tx) => {
+					return await service.deleteUser(tx, params.id);
+				});
+				return result.match(
+					() => status(204),
+					(err) => {
+						switch (err.type) {
+							case "user_not_found":
+								return status(
+									404,
+									"User not found" satisfies models.userNotFound,
+								);
+							case "failed_to_delete_user":
+								return status(
+									500,
+									"Failed to delete user" satisfies models.failedToDeleteUser,
+								);
+							default:
+								assertNever(err);
+						}
+					},
+				);
+			},
+			{
+				admin: true,
+				params: z.object({
+					id: z.uuidv4(),
+				}),
+				response: {
+					204: z.void(),
+					404: models.userNotFound,
+					500: models.failedToDeleteUser,
+				},
+			},
+		);
+}
+
 export function createUserModule(database: DatabasePlugin) {
 	return new Elysia({ name: "user", prefix: "/users" })
 		.use(createUserRoute(database))
 		.use(getUserByIdRoute(database))
 		.use(getUsersRoute(database))
-		.use(updateUserRoute(database));
+		.use(updateUserRoute(database))
+		.use(deleteUserRoute(database));
 }

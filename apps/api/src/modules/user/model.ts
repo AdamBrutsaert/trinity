@@ -64,3 +64,6 @@ export type updateUserBody = z.infer<typeof updateUserBody>;
 
 export const failedToUpdateUser = z.literal("Failed to update user");
 export type failedToUpdateUser = z.infer<typeof failedToUpdateUser>;
+
+export const failedToDeleteUser = z.literal("Failed to delete user");
+export type failedToDeleteUser = z.infer<typeof failedToDeleteUser>;

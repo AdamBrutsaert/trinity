@@ -42,7 +42,7 @@ async function createAdminUser(tx: Database) {
 	)._unsafeUnwrap().token;
 }
 
-async function createCustomerToken(tx: Database) {
+async function createCustomerUser(tx: Database) {
 	await createUser(tx, {
 		email: "customer@example.com",
 		password: "customerpassword",
@@ -117,7 +117,7 @@ describe("User module", () => {
 			});
 			expect(response.status).toBe(401);
 
-			const customerToken = await createCustomerToken(connection);
+			const customerToken = await createCustomerUser(connection);
 			const customerResponse = await api.users.post(
 				{
 					email: "john.doe@example.com",
@@ -196,7 +196,7 @@ describe("User module", () => {
 				.get();
 			expect(response.status).toBe(401);
 
-			const customerToken = await createCustomerToken(connection);
+			const customerToken = await createCustomerUser(connection);
 			const customerResponse = await api
 				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
@@ -249,7 +249,7 @@ describe("User module", () => {
 			const response = await api.users.get();
 			expect(response.status).toBe(401);
 
-			const customerToken = await createCustomerToken(connection);
+			const customerToken = await createCustomerUser(connection);
 			const customerResponse = await api.users.get({
 				headers: { Authorization: `Bearer ${customerToken}` },
 			});
@@ -319,7 +319,7 @@ describe("User module", () => {
 				});
 			expect(response.status).toBe(401);
 
-			const customerToken = await createCustomerToken(connection);
+			const customerToken = await createCustomerUser(connection);
 			const customerResponse = await api
 				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.put(
@@ -444,6 +444,51 @@ describe("User module", () => {
 					{ headers: { Authorization: `Bearer ${adminToken}` } },
 				);
 			expect(response.status).toBe(200);
+		});
+	});
+
+	describe("DELETE /:id", () => {
+		it("should return 401 or 403 for unauthenticated or customer delete requests", async () => {
+			const response = await api
+				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.delete();
+			expect(response.status).toBe(401);
+
+			const customerToken = await createCustomerUser(connection);
+			const customerResponse = await api
+				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.delete({}, { headers: { authorization: `Bearer ${customerToken}` } });
+			expect(customerResponse.status).toBe(403);
+		});
+
+		it("should return 404 for non-existing user", async () => {
+			const adminToken = await createAdminUser(connection);
+			const response = await api
+				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.delete({}, { headers: { Authorization: `Bearer ${adminToken}` } });
+			expect(response.status).toBe(404);
+		});
+
+		it("should delete an existing user", async () => {
+			const adminToken = await createAdminUser(connection);
+
+			const response1 = await api.users.post(
+				{
+					email: "john.doe@example.com",
+					password: "password123",
+					firstName: "John",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response1.status).toBe(201);
+
+			const response = await api
+				// biome-ignore lint/style/noNonNullAssertion: asserted before
+				.users({ id: response1.data!.id })
+				.delete({}, { headers: { Authorization: `Bearer ${adminToken}` } });
+			expect(response.status).toBe(204);
 		});
 	});
 });

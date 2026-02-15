@@ -221,3 +221,34 @@ export function updateUser(
 		},
 	);
 }
+
+export type DeleteUserError =
+	| {
+			type: "failed_to_delete_user";
+	  }
+	| {
+			type: "user_not_found";
+			id: string;
+	  };
+
+export function deleteUser(tx: Database, id: string) {
+	return ResultAsync.fromPromise(
+		tx
+			.delete(usersTable)
+			.where(eq(usersTable.id, id))
+			.returning({ id: usersTable.id }),
+		(_err) => {
+			return {
+				type: "failed_to_delete_user",
+			} satisfies DeleteUserError as DeleteUserError;
+		},
+	).andThen((res) => {
+		if (res.length === 0) {
+			return errAsync({
+				type: "user_not_found",
+				id,
+			} satisfies DeleteUserError as DeleteUserError);
+		}
+		return okAsync();
+	});
+}
