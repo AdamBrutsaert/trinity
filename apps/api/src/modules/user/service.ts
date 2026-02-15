@@ -114,3 +114,34 @@ export function getUserById(tx: Database, id: string) {
 		return okAsync(res);
 	});
 }
+
+export type GetUsersError = {
+	type: "failed_to_fetch_users";
+};
+
+export function getUsers(tx: Database) {
+	return ResultAsync.fromPromise(
+		tx.query.usersTable.findMany({
+			columns: {
+				id: true,
+				email: true,
+				firstName: true,
+				lastName: true,
+				phoneNumber: true,
+				address: true,
+				zipCode: true,
+				city: true,
+				country: true,
+				role: true,
+				createdAt: true,
+				updatedAt: true,
+			},
+		}),
+		(err) =>
+			errorMapper<GetUsersError>(err, {
+				default: () => ({
+					type: "failed_to_fetch_users",
+				}),
+			}),
+	);
+}

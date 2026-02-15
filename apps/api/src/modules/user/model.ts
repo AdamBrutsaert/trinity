@@ -41,3 +41,9 @@ export type emailAlreadyExists = z.infer<typeof emailAlreadyExists>;
 
 export const failedToCreateUser = z.literal("Failed to create user");
 export type failedToCreateUser = z.infer<typeof failedToCreateUser>;
+
+export const userListResponse = z.array(userResponse);
+export type userListResponse = z.infer<typeof userListResponse>;
+
+export const failedToFetchUsers = z.literal("Failed to fetch users");
+export type failedToFetchUsers = z.infer<typeof failedToFetchUsers>;

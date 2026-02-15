@@ -25,7 +25,7 @@ import {
 } from "../database";
 import { createUser } from "./service";
 
-async function createAdminToken(tx: Database) {
+async function createAdminUser(tx: Database) {
 	await createUser(tx, {
 		email: "admin@example.com",
 		password: "adminpassword",
@@ -106,137 +106,192 @@ describe("User module", () => {
 		await admin.close();
 	});
 
-	it("should return 401 or 403 for unauthenticated or customer creation requests", async () => {
-		const response = await api.users.post({
-			email: "john.doe@example.com",
-			password: "password123",
-			firstName: "John",
-			lastName: "Doe",
-			role: "customer",
+	describe("POST /", () => {
+		it("should return 401 or 403 for unauthenticated or customer creation requests", async () => {
+			const response = await api.users.post({
+				email: "john.doe@example.com",
+				password: "password123",
+				firstName: "John",
+				lastName: "Doe",
+				role: "customer",
+			});
+			expect(response.status).toBe(401);
+
+			const customerToken = await createCustomerToken(connection);
+			const customerResponse = await api.users.post(
+				{
+					email: "john.doe@example.com",
+					password: "password123",
+					firstName: "John",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+			expect(customerResponse.status).toBe(403);
 		});
-		expect(response.status).toBe(401);
 
-		const customerToken = await createCustomerToken(connection);
-		const customerResponse = await api.users.post(
-			{
-				email: "john.doe@example.com",
-				password: "password123",
-				firstName: "John",
-				lastName: "Doe",
-				role: "customer",
-			},
-			{ headers: { Authorization: `Bearer ${customerToken}` } },
-		);
-		expect(customerResponse.status).toBe(403);
+		it("should create an user", async () => {
+			const adminToken = await createAdminUser(connection);
+
+			const response = await api.users.post(
+				{
+					email: "john.doe@example.com",
+					password: "password123",
+					firstName: "John",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+
+			expect(response.status).toBe(201);
+			expect(response.data).toHaveProperty("id");
+			expect(response.data?.email).toBe("john.doe@example.com");
+			expect(response.data?.firstName).toBe("John");
+			expect(response.data?.lastName).toBe("Doe");
+			expect(response.data?.phoneNumber).toBeNull();
+			expect(response.data?.address).toBeNull();
+			expect(response.data?.zipCode).toBeNull();
+			expect(response.data?.city).toBeNull();
+			expect(response.data?.country).toBeNull();
+			expect(response.data?.role).toBe("customer");
+			expect(response.data).toHaveProperty("createdAt");
+			expect(response.data).toHaveProperty("updatedAt");
+		});
+
+		it("should not create an user with an existing email", async () => {
+			const adminToken = await createAdminUser(connection);
+
+			const response = await api.users.post(
+				{
+					email: "john.doe@example.com",
+					password: "password123",
+					firstName: "John",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response.status).toBe(201);
+
+			const duplicateResponse = await api.users.post(
+				{
+					email: "john.doe@example.com",
+					password: "password123",
+					firstName: "John",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(duplicateResponse.status).toBe(409);
+		});
 	});
 
-	it("should create an user", async () => {
-		const adminToken = await createAdminToken(connection);
+	describe("GET /:id", () => {
+		it("should return 401 or 403 for unauthenticated or customer find requests", async () => {
+			const response = await api
+				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.get();
+			expect(response.status).toBe(401);
 
-		const response = await api.users.post(
-			{
-				email: "john.doe@example.com",
-				password: "password123",
-				firstName: "John",
-				lastName: "Doe",
-				role: "customer",
-			},
-			{ headers: { Authorization: `Bearer ${adminToken}` } },
-		);
+			const customerToken = await createCustomerToken(connection);
+			const customerResponse = await api
+				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+			expect(customerResponse.status).toBe(403);
+		});
 
-		expect(response.status).toBe(201);
-		expect(response.data).toHaveProperty("id");
-		expect(response.data?.email).toBe("john.doe@example.com");
-		expect(response.data?.firstName).toBe("John");
-		expect(response.data?.lastName).toBe("Doe");
-		expect(response.data?.phoneNumber).toBeNull();
-		expect(response.data?.address).toBeNull();
-		expect(response.data?.zipCode).toBeNull();
-		expect(response.data?.city).toBeNull();
-		expect(response.data?.country).toBeNull();
-		expect(response.data?.role).toBe("customer");
-		expect(response.data).toHaveProperty("createdAt");
-		expect(response.data).toHaveProperty("updatedAt");
+		it("should find an existing user", async () => {
+			const adminToken = await createAdminUser(connection);
+
+			const response = await api.users.post(
+				{
+					email: "john.doe@example.com",
+					password: "password123",
+					firstName: "John",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response.status).toBe(201);
+
+			// biome-ignore lint/style/noNonNullAssertion: status is checked above
+			const userId = response.data!.id;
+			const userResponse = await api
+				.users({ id: userId })
+				.get({ headers: { Authorization: `Bearer ${adminToken}` } });
+			expect(userResponse.status).toBe(200);
+			expect(userResponse.data).toEqual(response.data);
+		});
+
+		it("should return 404 for non-existing user", async () => {
+			const adminToken = await createAdminUser(connection);
+			const userResponse = await api
+				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.get({ headers: { Authorization: `Bearer ${adminToken}` } });
+			expect(userResponse.status).toBe(404);
+		});
+
+		it("should return 422 for invalid user ID", async () => {
+			const adminToken = await createAdminUser(connection);
+			const userResponse = await api
+				.users({ id: "invalid-uuid" })
+				.get({ headers: { Authorization: `Bearer ${adminToken}` } });
+			expect(userResponse.status).toBe(422);
+		});
 	});
 
-	it("should not create an user with an existing email", async () => {
-		const adminToken = await createAdminToken(connection);
+	describe("GET /", () => {
+		it("should return 401 for unauthenticated requests", async () => {
+			const response = await api.users.get();
+			expect(response.status).toBe(401);
+		});
 
-		const response = await api.users.post(
-			{
-				email: "john.doe@example.com",
-				password: "password123",
-				firstName: "John",
-				lastName: "Doe",
-				role: "customer",
-			},
-			{ headers: { Authorization: `Bearer ${adminToken}` } },
-		);
-		expect(response.status).toBe(201);
+		it("should return a list of users", async () => {
+			const adminToken = await createAdminUser(connection);
 
-		const duplicateResponse = await api.users.post(
-			{
-				email: "john.doe@example.com",
-				password: "password123",
-				firstName: "John",
-				lastName: "Doe",
-				role: "customer",
-			},
-			{ headers: { Authorization: `Bearer ${adminToken}` } },
-		);
-		expect(duplicateResponse.status).toBe(409);
-	});
+			const response1 = await api.users.post(
+				{
+					email: "john.doe@example.com",
+					password: "password123",
+					firstName: "John",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response1.status).toBe(201);
 
-	it("should return 401 or 403 for unauthenticated or customer find requests", async () => {
-		const response = await api
-			.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
-			.get();
-		expect(response.status).toBe(401);
+			const response2 = await api.users.post(
+				{
+					email: "jane.doe@example.com",
+					password: "password123",
+					firstName: "Jane",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response2.status).toBe(201);
 
-		const customerToken = await createCustomerToken(connection);
-		const customerResponse = await api
-			.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
-			.get({ headers: { Authorization: `Bearer ${customerToken}` } });
-		expect(customerResponse.status).toBe(403);
-	});
-
-	it("should find an existing user", async () => {
-		const adminToken = await createAdminToken(connection);
-
-		const response = await api.users.post(
-			{
-				email: "john.doe@example.com",
-				password: "password123",
-				firstName: "John",
-				lastName: "Doe",
-				role: "customer",
-			},
-			{ headers: { Authorization: `Bearer ${adminToken}` } },
-		);
-		expect(response.status).toBe(201);
-
-		// biome-ignore lint/style/noNonNullAssertion: status is checked above
-		const userId = response.data!.id;
-		const userResponse = await api
-			.users({ id: userId })
-			.get({ headers: { Authorization: `Bearer ${adminToken}` } });
-		expect(userResponse.status).toBe(200);
-		expect(userResponse.data).toEqual(response.data);
-	});
-
-	it("should return 404 for non-existing user", async () => {
-		const adminToken = await createAdminToken(connection);
-		const userResponse = await api
-			.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
-			.get({ headers: { Authorization: `Bearer ${adminToken}` } });
-		expect(userResponse.status).toBe(404);
-	});
-
-	it("should return 422 for invalid user ID", async () => {
-		const adminToken = await createAdminToken(connection);
-		const userResponse = await api
-			.users({ id: "invalid-uuid" })
-			.get({ headers: { Authorization: `Bearer ${adminToken}` } });
-		expect(userResponse.status).toBe(422);
+			const response = await api.users.get({
+				headers: { Authorization: `Bearer ${adminToken}` },
+			});
+			expect(response.status).toBe(200);
+			expect(response.data).toHaveLength(3);
+			expect(response.data).toEqual(
+				expect.arrayContaining([
+					expect.objectContaining({
+						email: "john.doe@example.com",
+					}),
+					expect.objectContaining({
+						email: "jane.doe@example.com",
+					}),
+				]),
+			);
+		});
 	});
 });

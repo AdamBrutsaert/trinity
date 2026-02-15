@@ -102,8 +102,46 @@ function getUserByIdRoute(database: DatabasePlugin) {
 		);
 }
 
+function getUsersRoute(database: DatabasePlugin) {
+	return new Elysia()
+		.use(database)
+		.use(auth)
+		.get(
+			"/",
+			async ({ database }) => {
+				const result = await database.transaction(
+					async (tx) => await service.getUsers(tx),
+				);
+				return result.match(
+					(res) =>
+						status(
+							200,
+							res.map((user) => ({
+								...user,
+								createdAt: user.createdAt.toISOString(),
+								updatedAt: user.updatedAt.toISOString(),
+							})),
+						),
+					(_err) =>
+						status(
+							500,
+							"Failed to fetch users" satisfies models.failedToFetchUsers,
+						),
+				);
+			},
+			{
+				admin: true,
+				response: {
+					200: models.userListResponse,
+					500: models.failedToFetchUsers,
+				},
+			},
+		);
+}
+
 export function createUserModule(database: DatabasePlugin) {
 	return new Elysia({ name: "user", prefix: "/users" })
 		.use(createUserRoute(database))
-		.use(getUserByIdRoute(database));
+		.use(getUserByIdRoute(database))
+		.use(getUsersRoute(database));
 }
