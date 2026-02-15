@@ -1,6 +1,7 @@
 import { errorMapper } from "@/errors";
 import type { Database } from "@/modules/database";
 import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
 import { errAsync, okAsync, ResultAsync } from "neverthrow";
 import { usersTable } from "../database/schema";
 import type * as models from "./model";
@@ -143,5 +144,80 @@ export function getUsers(tx: Database) {
 					type: "failed_to_fetch_users",
 				}),
 			}),
+	);
+}
+
+export type UpdateUserError =
+	| {
+			type: "user_not_found";
+			id: string;
+	  }
+	| {
+			type: "email_already_exists";
+			email: string;
+	  }
+	| {
+			type: "failed_to_update_user";
+	  };
+
+export function updateUser(
+	tx: Database,
+	id: string,
+	params: models.updateUserBody,
+) {
+	return ResultAsync.fromSafePromise(bcrypt.hash(params.password, 10)).andThen(
+		(hashedPassword) => {
+			return ResultAsync.fromPromise(
+				tx
+					.update(usersTable)
+					.set({
+						email: params.email,
+						passwordHash: hashedPassword,
+						firstName: params.firstName,
+						lastName: params.lastName,
+						phoneNumber: params.phoneNumber,
+						address: params.address,
+						zipCode: params.zipCode,
+						city: params.city,
+						country: params.country,
+						role: params.role,
+						updatedAt: new Date(),
+					})
+					.where(eq(usersTable.id, id))
+					.returning({
+						id: usersTable.id,
+						email: usersTable.email,
+						firstName: usersTable.firstName,
+						lastName: usersTable.lastName,
+						phoneNumber: usersTable.phoneNumber,
+						address: usersTable.address,
+						zipCode: usersTable.zipCode,
+						city: usersTable.city,
+						country: usersTable.country,
+						role: usersTable.role,
+						createdAt: usersTable.createdAt,
+						updatedAt: usersTable.updatedAt,
+					}),
+				(err) =>
+					errorMapper<UpdateUserError>(err, {
+						onConflict: () => ({
+							type: "email_already_exists",
+							email: params.email,
+						}),
+						default: () => ({
+							type: "failed_to_update_user",
+						}),
+					}),
+			).andThen((res) => {
+				const user = res[0];
+				if (!user) {
+					return errAsync({
+						type: "user_not_found",
+						id: id,
+					} satisfies UpdateUserError as UpdateUserError);
+				}
+				return okAsync(user);
+			});
+		},
 	);
 }

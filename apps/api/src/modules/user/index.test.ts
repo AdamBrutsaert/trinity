@@ -248,6 +248,12 @@ describe("User module", () => {
 		it("should return 401 for unauthenticated requests", async () => {
 			const response = await api.users.get();
 			expect(response.status).toBe(401);
+
+			const customerToken = await createCustomerToken(connection);
+			const customerResponse = await api.users.get({
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
+			expect(customerResponse.status).toBe(403);
 		});
 
 		it("should return a list of users", async () => {
@@ -292,6 +298,152 @@ describe("User module", () => {
 					}),
 				]),
 			);
+		});
+	});
+
+	describe("PUT /:id", () => {
+		it("should return 401 or 403 for unauthenticated or customer update requests", async () => {
+			const response = await api
+				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.put({
+					email: "john.doe@example.com",
+					password: "password123",
+					firstName: "John",
+					lastName: "Doe",
+					role: "customer",
+					address: null,
+					city: null,
+					country: null,
+					phoneNumber: null,
+					zipCode: null,
+				});
+			expect(response.status).toBe(401);
+
+			const customerToken = await createCustomerToken(connection);
+			const customerResponse = await api
+				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.put(
+					{
+						email: "john.doe@example.com",
+						password: "password123",
+						firstName: "John",
+						lastName: "Doe",
+						role: "customer",
+						address: null,
+						city: null,
+						country: null,
+						phoneNumber: null,
+						zipCode: null,
+					},
+					{ headers: { Authorization: `Bearer ${customerToken}` } },
+				);
+			expect(customerResponse.status).toBe(403);
+		});
+
+		it("should return 404 for non-existing user", async () => {
+			const adminToken = await createAdminUser(connection);
+			const response = await api
+				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.put(
+					{
+						email: "john.doe@example.com",
+						password: "password123",
+						firstName: "John",
+						lastName: "Doe",
+						role: "customer",
+						address: null,
+						city: null,
+						country: null,
+						phoneNumber: null,
+						zipCode: null,
+					},
+					{ headers: { Authorization: `Bearer ${adminToken}` } },
+				);
+			expect(response.status).toBe(404);
+		});
+
+		it("should return 409 for email already in use by another user", async () => {
+			const adminToken = await createAdminUser(connection);
+
+			const response1 = await api.users.post(
+				{
+					email: "john.doe@example.com",
+					password: "password123",
+					firstName: "John",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response1.status).toBe(201);
+
+			const response2 = await api.users.post(
+				{
+					email: "jane.doe@example.com",
+					password: "password123",
+					firstName: "Jane",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response2.status).toBe(201);
+
+			const response = await api
+				// biome-ignore lint/style/noNonNullAssertion: asserted before
+				.users({ id: response2.data!.id })
+				.put(
+					{
+						email: "john.doe@example.com",
+						password: "password123",
+						firstName: "John",
+						lastName: "Doe",
+						role: "customer",
+						address: null,
+						city: null,
+						country: null,
+						phoneNumber: null,
+						zipCode: null,
+					},
+					{ headers: { Authorization: `Bearer ${adminToken}` } },
+				);
+			expect(response.status).toBe(409);
+		});
+
+		it("should update an existing user", async () => {
+			const adminToken = await createAdminUser(connection);
+
+			const response1 = await api.users.post(
+				{
+					email: "john.doe@example.com",
+					password: "password123",
+					firstName: "John",
+					lastName: "Doe",
+					role: "customer",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response1.status).toBe(201);
+
+			const response = await api
+				// biome-ignore lint/style/noNonNullAssertion: asserted before
+				.users({ id: response1.data!.id })
+				.put(
+					{
+						email: "john.doe@example.com",
+						password: "otherpassword123",
+						firstName: "Johnny",
+						lastName: "Doe",
+						role: "customer",
+						address: null,
+						city: null,
+						country: null,
+						phoneNumber: null,
+						zipCode: null,
+					},
+					{ headers: { Authorization: `Bearer ${adminToken}` } },
+				);
+			expect(response.status).toBe(200);
 		});
 	});
 });
