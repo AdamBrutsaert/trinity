@@ -167,12 +167,13 @@ describe("Auth module", () => {
 			expect(response.status).toBe(422);
 		});
 
-		it("should reject password shorter than 8 characters on login", async () => {
+		// For login, we want to allow short passwords
+		it("shouldn't reject password shorter than 8 characters on login", async () => {
 			const response = await api.auth.login.post({
 				email: "test@example.com",
 				password: "short",
 			});
-			expect(response.status).toBe(422);
+			expect(response.status).toBe(401);
 		});
 	});
 });

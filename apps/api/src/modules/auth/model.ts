@@ -26,7 +26,7 @@ export type failedToCreateUser = z.infer<typeof failedToCreateUser>;
 
 export const loginBody = z.object({
 	email: z.email().max(255),
-	password: z.string().min(8).max(255),
+	password: z.string().max(255),
 });
 export type loginBody = z.infer<typeof loginBody>;
 
