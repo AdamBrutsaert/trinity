@@ -41,3 +41,29 @@ export type emailAlreadyExists = z.infer<typeof emailAlreadyExists>;
 
 export const failedToCreateUser = z.literal("Failed to create user");
 export type failedToCreateUser = z.infer<typeof failedToCreateUser>;
+
+export const userListResponse = z.array(userResponse);
+export type userListResponse = z.infer<typeof userListResponse>;
+
+export const failedToFetchUsers = z.literal("Failed to fetch users");
+export type failedToFetchUsers = z.infer<typeof failedToFetchUsers>;
+
+export const updateUserBody = z.object({
+	email: z.email().max(255),
+	password: z.string().min(8).max(255),
+	firstName: z.string().max(100),
+	lastName: z.string().max(100),
+	phoneNumber: z.string().max(30).nullable(),
+	address: z.string().nullable(),
+	zipCode: z.string().max(20).nullable(),
+	city: z.string().max(100).nullable(),
+	country: z.string().max(100).nullable(),
+	role: z.enum(["customer", "admin"]),
+});
+export type updateUserBody = z.infer<typeof updateUserBody>;
+
+export const failedToUpdateUser = z.literal("Failed to update user");
+export type failedToUpdateUser = z.infer<typeof failedToUpdateUser>;
+
+export const failedToDeleteUser = z.literal("Failed to delete user");
+export type failedToDeleteUser = z.infer<typeof failedToDeleteUser>;
