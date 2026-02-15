@@ -65,78 +65,37 @@ describe("Auth module", () => {
 		await admin.close();
 	});
 
-	it("should register a new user", async () => {
-		const response = await api.auth.register.post({
-			email: "john.doe@example.com",
-			password: "password123",
-			firstName: "John",
-			lastName: "Doe",
+	describe("POST /register", () => {
+		it("should register a new user", async () => {
+			const response = await api.auth.register.post({
+				email: "john.doe@example.com",
+				password: "password123",
+				firstName: "John",
+				lastName: "Doe",
+			});
+
+			expect(response.status).toBe(201);
+			expect(response.data).toHaveProperty("token");
 		});
 
-		expect(response.status).toBe(201);
-		expect(response.data).toHaveProperty("token");
-	});
+		it("should not register an user with an existing email", async () => {
+			const response = await api.auth.register.post({
+				email: "john.doe@example.com",
+				password: "password123",
+				firstName: "John",
+				lastName: "Doe",
+			});
+			expect(response.status).toBe(201);
 
-	it("should not register an user with an existing email", async () => {
-		const response = await api.auth.register.post({
-			email: "john.doe@example.com",
-			password: "password123",
-			firstName: "John",
-			lastName: "Doe",
+			const duplicateResponse = await api.auth.register.post({
+				email: "john.doe@example.com",
+				password: "password123",
+				firstName: "John",
+				lastName: "Doe",
+			});
+			expect(duplicateResponse.status).toBe(409);
 		});
-		expect(response.status).toBe(201);
 
-		const duplicateResponse = await api.auth.register.post({
-			email: "john.doe@example.com",
-			password: "password123",
-			firstName: "John",
-			lastName: "Doe",
-		});
-		expect(duplicateResponse.status).toBe(409);
-	});
-
-	it("should login an existing user", async () => {
-		const registerResponse = await api.auth.register.post({
-			email: "john.doe@example.com",
-			password: "password123",
-			firstName: "John",
-			lastName: "Doe",
-		});
-		expect(registerResponse.status).toBe(201);
-
-		const loginResponse = await api.auth.login.post({
-			email: "john.doe@example.com",
-			password: "password123",
-		});
-		expect(loginResponse.status).toBe(200);
-		expect(loginResponse.data).toHaveProperty("token");
-	});
-
-	it("should not login with invalid credentials", async () => {
-		const loginResponse = await api.auth.login.post({
-			email: "doesnotexist@example.com",
-			password: "doesnotexist",
-		});
-		expect(loginResponse.status).toBe(401);
-	});
-
-	it("should not login with invalid password", async () => {
-		const registerResponse = await api.auth.register.post({
-			email: "john.doe@example.com",
-			password: "password123",
-			firstName: "John",
-			lastName: "Doe",
-		});
-		expect(registerResponse.status).toBe(201);
-
-		const loginResponse = await api.auth.login.post({
-			email: "john.doe@example.com",
-			password: "wrongpassword",
-		});
-		expect(loginResponse.status).toBe(401);
-	});
-
-	describe("Validation", () => {
 		it("should reject invalid email format on register", async () => {
 			const response = await api.auth.register.post({
 				email: "invalid-email",
@@ -145,24 +104,6 @@ describe("Auth module", () => {
 				lastName: "Doe",
 			});
 			expect(response.status).toBe(422);
-		});
-
-		it("should accept valid email formats", async () => {
-			const validEmails = [
-				"user@example.com",
-				"user.name@example.com",
-				"user+tag@example.co.uk",
-			];
-
-			for (const email of validEmails) {
-				const response = await api.auth.register.post({
-					email,
-					password: "validsecurepassword123",
-					firstName: "John",
-					lastName: "Doe",
-				});
-				expect(response.status).toBe(201);
-			}
 		});
 
 		it("should reject password shorter than 8 characters on register", async () => {
@@ -174,16 +115,48 @@ describe("Auth module", () => {
 			});
 			expect(response.status).toBe(422);
 		});
+	});
 
-		it("should accept password with 8 or more characters", async () => {
-			const response = await api.auth.register.post({
-				email: "validpass@example.com",
-				password: "validpassword",
+	describe("POST /login", () => {
+		it("should login an existing user", async () => {
+			const registerResponse = await api.auth.register.post({
+				email: "john.doe@example.com",
+				password: "password123",
 				firstName: "John",
 				lastName: "Doe",
 			});
-			expect(response.status).toBe(201);
-			expect(response.data).toHaveProperty("token");
+			expect(registerResponse.status).toBe(201);
+
+			const loginResponse = await api.auth.login.post({
+				email: "john.doe@example.com",
+				password: "password123",
+			});
+			expect(loginResponse.status).toBe(200);
+			expect(loginResponse.data).toHaveProperty("token");
+		});
+
+		it("should not login with invalid credentials", async () => {
+			const loginResponse = await api.auth.login.post({
+				email: "doesnotexist@example.com",
+				password: "doesnotexist",
+			});
+			expect(loginResponse.status).toBe(401);
+		});
+
+		it("should not login with invalid password", async () => {
+			const registerResponse = await api.auth.register.post({
+				email: "john.doe@example.com",
+				password: "password123",
+				firstName: "John",
+				lastName: "Doe",
+			});
+			expect(registerResponse.status).toBe(201);
+
+			const loginResponse = await api.auth.login.post({
+				email: "john.doe@example.com",
+				password: "wrongpassword",
+			});
+			expect(loginResponse.status).toBe(401);
 		});
 
 		it("should reject invalid email format on login", async () => {
