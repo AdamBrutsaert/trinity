@@ -8,7 +8,7 @@ import {
 	createDatabaseConnection,
 	createDatabasePlugin,
 } from "./modules/database";
-import { createUserModule } from "./modules/user";
+import { createUserModule } from "./modules/users";
 
 const databasePlugin = createDatabasePlugin(
 	createDatabaseConnection(env.DATABASE_URL),
