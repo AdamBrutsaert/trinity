@@ -100,10 +100,9 @@ export function getUserById(tx: Database, id: string) {
 		}),
 		(err) =>
 			errorMapper<GetUserByIdError>(err, {
-				default: () =>
-					({
-						type: "failed_to_fetch_user",
-					}) satisfies GetUserByIdError as GetUserByIdError,
+				default: () => ({
+					type: "failed_to_fetch_user",
+				}),
 			}),
 	).andThen((res) => {
 		if (!res) {

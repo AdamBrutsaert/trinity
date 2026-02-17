@@ -4,11 +4,12 @@ import { Elysia } from "elysia";
 import * as z from "zod";
 import { env } from "./env";
 import { createAuthModule } from "./modules/auth";
+import { createBrandsModule } from "./modules/brands";
 import {
 	createDatabaseConnection,
 	createDatabasePlugin,
 } from "./modules/database";
-import { createUserModule } from "./modules/users";
+import { createUsersModule } from "./modules/users";
 
 const databasePlugin = createDatabasePlugin(
 	createDatabaseConnection(env.DATABASE_URL),
@@ -36,7 +37,8 @@ const app = new Elysia()
 		}),
 	)
 	.use(createAuthModule(databasePlugin))
-	.use(createUserModule(databasePlugin))
+	.use(createUsersModule(databasePlugin))
+	.use(createBrandsModule(databasePlugin))
 	.listen({
 		port: 3000,
 		hostname: "0.0.0.0",

@@ -1,12 +1,12 @@
 import { assertNever } from "@/errors";
-import { auth } from "@/modules/auth/macro";
-import type { DatabasePlugin } from "@/modules/database";
 import Elysia, { status } from "elysia";
-import * as z from "zod";
-import * as models from "./model";
+import z from "zod";
+import { auth } from "../auth/macro";
+import type { DatabasePlugin } from "../database";
+import * as models from "./models";
 import * as service from "./service";
 
-function createUserRoute(database: DatabasePlugin) {
+function createBrandRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
 		.use(auth)
@@ -14,7 +14,7 @@ function createUserRoute(database: DatabasePlugin) {
 			"/",
 			async ({ body, database }) => {
 				const result = await database.transaction(async (tx) => {
-					return await service.createUser(tx, body);
+					return await service.createBrand(tx, body.name);
 				});
 				return result.match(
 					(res) =>
@@ -25,15 +25,15 @@ function createUserRoute(database: DatabasePlugin) {
 						}),
 					(err) => {
 						switch (err.type) {
-							case "email_already_exists":
+							case "brand_name_already_exists":
 								return status(
 									409,
-									"Email already exists" satisfies models.emailAlreadyExists,
+									"Brand already exists" satisfies models.brandAlreadyExists,
 								);
-							case "failed_to_create_user":
+							case "failed_to_create_brand":
 								return status(
 									500,
-									"Failed to create user" satisfies models.failedToCreateUser,
+									"Failed to create brand" satisfies models.failedToCreateBrand,
 								);
 							default:
 								assertNever(err);
@@ -43,26 +43,26 @@ function createUserRoute(database: DatabasePlugin) {
 			},
 			{
 				admin: true,
-				body: models.createUserBody,
+				body: models.createBrandBody,
 				response: {
-					201: models.userResponse,
-					409: models.emailAlreadyExists,
-					500: models.failedToCreateUser,
+					201: models.brandResponse,
+					409: models.brandAlreadyExists,
+					500: models.failedToCreateBrand,
 				},
 			},
 		);
 }
 
-function getUserByIdRoute(database: DatabasePlugin) {
+function getBrandByIdRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
 		.use(auth)
 		.get(
 			"/:id",
 			async ({ params, database }) => {
-				const result = await database.transaction(
-					async (tx) => await service.getUserById(tx, params.id),
-				);
+				const result = await database.transaction(async (tx) => {
+					return await service.getBrandById(tx, params.id);
+				});
 				return result.match(
 					(res) =>
 						status(200, {
@@ -72,15 +72,15 @@ function getUserByIdRoute(database: DatabasePlugin) {
 						}),
 					(err) => {
 						switch (err.type) {
-							case "user_not_found":
+							case "brand_not_found":
 								return status(
 									404,
-									"User not found" satisfies models.userNotFound,
+									"Brand not found" satisfies models.brandNotFound,
 								);
-							case "failed_to_fetch_user":
+							case "failed_to_fetch_brand":
 								return status(
 									500,
-									"Failed to fetch user" satisfies models.failedToFetchUser,
+									"Failed to fetch brand" satisfies models.failedToFetchBrand,
 								);
 							default:
 								assertNever(err);
@@ -94,15 +94,15 @@ function getUserByIdRoute(database: DatabasePlugin) {
 					id: z.uuidv4(),
 				}),
 				response: {
-					200: models.userResponse,
-					404: models.userNotFound,
-					500: models.failedToFetchUser,
+					200: models.brandResponse,
+					404: models.brandNotFound,
+					500: models.failedToFetchBrand,
 				},
 			},
 		);
 }
 
-function getUsersRoute(database: DatabasePlugin) {
+function getBrandsRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
 		.use(auth)
@@ -110,7 +110,7 @@ function getUsersRoute(database: DatabasePlugin) {
 			"/",
 			async ({ database }) => {
 				const result = await database.transaction(
-					async (tx) => await service.getUsers(tx),
+					async (tx) => await service.getBrands(tx),
 				);
 				return result.match(
 					(res) =>
@@ -125,21 +125,21 @@ function getUsersRoute(database: DatabasePlugin) {
 					(_err) =>
 						status(
 							500,
-							"Failed to fetch users" satisfies models.failedToFetchUsers,
+							"Failed to fetch brands" satisfies models.failedToFetchBrands,
 						),
 				);
 			},
 			{
 				admin: true,
 				response: {
-					200: models.userListResponse,
-					500: models.failedToFetchUsers,
+					200: models.brandListResponse,
+					500: models.failedToFetchBrands,
 				},
 			},
 		);
 }
 
-function updateUserRoute(database: DatabasePlugin) {
+function updateBrandRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
 		.use(auth)
@@ -147,7 +147,7 @@ function updateUserRoute(database: DatabasePlugin) {
 			"/:id",
 			async ({ params, body, database }) => {
 				const result = await database.transaction(async (tx) => {
-					return await service.updateUser(tx, params.id, body);
+					return await service.updateBrand(tx, params.id, body.name);
 				});
 				return result.match(
 					(res) =>
@@ -158,20 +158,20 @@ function updateUserRoute(database: DatabasePlugin) {
 						}),
 					(err) => {
 						switch (err.type) {
-							case "user_not_found":
+							case "brand_not_found":
 								return status(
 									404,
-									"User not found" satisfies models.userNotFound,
+									"Brand not found" satisfies models.brandNotFound,
 								);
-							case "email_already_exists":
+							case "brand_name_already_exists":
 								return status(
 									409,
-									"Email already exists" satisfies models.emailAlreadyExists,
+									"Brand already exists" satisfies models.brandAlreadyExists,
 								);
-							case "failed_to_update_user":
+							case "failed_to_update_brand":
 								return status(
 									500,
-									"Failed to update user" satisfies models.failedToUpdateUser,
+									"Failed to update brand" satisfies models.failedToUpdateBrand,
 								);
 							default:
 								assertNever(err);
@@ -184,18 +184,18 @@ function updateUserRoute(database: DatabasePlugin) {
 				params: z.object({
 					id: z.uuidv4(),
 				}),
-				body: models.updateUserBody,
+				body: models.updateBrandBody,
 				response: {
-					200: models.userResponse,
-					404: models.userNotFound,
-					409: models.emailAlreadyExists,
-					500: models.failedToUpdateUser,
+					200: models.brandResponse,
+					404: models.brandNotFound,
+					409: models.brandAlreadyExists,
+					500: models.failedToUpdateBrand,
 				},
 			},
 		);
 }
 
-function deleteUserRoute(database: DatabasePlugin) {
+function deleteBrandRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
 		.use(auth)
@@ -203,21 +203,21 @@ function deleteUserRoute(database: DatabasePlugin) {
 			"/:id",
 			async ({ params, database }) => {
 				const result = await database.transaction(async (tx) => {
-					return await service.deleteUser(tx, params.id);
+					return await service.deleteBrand(tx, params.id);
 				});
 				return result.match(
 					() => status(204),
 					(err) => {
 						switch (err.type) {
-							case "user_not_found":
+							case "brand_not_found":
 								return status(
 									404,
-									"User not found" satisfies models.userNotFound,
+									"Brand not found" satisfies models.brandNotFound,
 								);
-							case "failed_to_delete_user":
+							case "failed_to_delete_brand":
 								return status(
 									500,
-									"Failed to delete user" satisfies models.failedToDeleteUser,
+									"Failed to delete brand" satisfies models.failedToDeleteBrand,
 								);
 							default:
 								assertNever(err);
@@ -232,18 +232,18 @@ function deleteUserRoute(database: DatabasePlugin) {
 				}),
 				response: {
 					204: z.void(),
-					404: models.userNotFound,
-					500: models.failedToDeleteUser,
+					404: models.brandNotFound,
+					500: models.failedToDeleteBrand,
 				},
 			},
 		);
 }
 
-export function createUsersModule(database: DatabasePlugin) {
-	return new Elysia({ name: "users", prefix: "/users" })
-		.use(createUserRoute(database))
-		.use(getUserByIdRoute(database))
-		.use(getUsersRoute(database))
-		.use(updateUserRoute(database))
-		.use(deleteUserRoute(database));
+export function createBrandsModule(database: DatabasePlugin) {
+	return new Elysia({ name: "brands", prefix: "/brands" })
+		.use(createBrandRoute(database))
+		.use(getBrandByIdRoute(database))
+		.use(getBrandsRoute(database))
+		.use(updateBrandRoute(database))
+		.use(deleteBrandRoute(database));
 }
