@@ -5,6 +5,7 @@ import * as z from "zod";
 import { env } from "./env";
 import { createAuthModule } from "./modules/auth";
 import { createBrandsModule } from "./modules/brands";
+import { createCategoriesModule } from "./modules/categories";
 import {
 	createDatabaseConnection,
 	createDatabasePlugin,
@@ -39,6 +40,7 @@ const app = new Elysia()
 	.use(createAuthModule(databasePlugin))
 	.use(createUsersModule(databasePlugin))
 	.use(createBrandsModule(databasePlugin))
+	.use(createCategoriesModule(databasePlugin))
 	.listen({
 		port: 3000,
 		hostname: "0.0.0.0",
