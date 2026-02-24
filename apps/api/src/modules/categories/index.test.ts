@@ -59,7 +59,7 @@ async function createCustomerUser(tx: Database) {
 	)._unsafeUnwrap().token;
 }
 
-describe("User module", () => {
+describe("Categories module", () => {
 	let container: StartedPostgreSqlContainer;
 	let connection: ReturnType<typeof createDatabaseConnection>;
 	let api: ReturnType<typeof treaty<ReturnType<typeof createCategoriesModule>>>;

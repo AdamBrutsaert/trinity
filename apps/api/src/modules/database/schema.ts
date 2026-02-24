@@ -47,31 +47,47 @@ export const categoriesTable = pgTable("categories", (t) => ({
 	updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
 }));
 
-export const productsTable = pgTable("products", (t) => ({
+export const productsTable = pgTable(
+	"products",
+	(t) => ({
+		id: t.uuid("id").defaultRandom().primaryKey(),
+
+		// Product information
+		barcode: t.varchar("barcode", { length: 50 }).notNull().unique(),
+		name: t.varchar("name", { length: 255 }).notNull(),
+		description: t.text("description"),
+		imageUrl: t.text("image_url"),
+		brandId: t
+			.uuid("brand_id")
+			.references(() => brandsTable.id, { onDelete: "cascade" })
+			.notNull(),
+		categoryId: t
+			.uuid("category_id")
+			.references(() => categoriesTable.id, { onDelete: "cascade" })
+			.notNull(),
+
+		// Nutritional information
+		energyKcal: t.integer("energy_kcal"),
+		fat: t.real("fat"),
+		carbs: t.real("carbs"),
+		protein: t.real("protein"),
+		salt: t.real("salt"),
+
+		// Timestamps
+		createdAt: t.timestamp("created_at").defaultNow().notNull(),
+		updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
+	}),
+	(t) => [uniqueIndex("idx_unique_barcode").on(t.barcode)],
+);
+
+export const stocksTable = pgTable("stocks", (t) => ({
 	id: t.uuid("id").defaultRandom().primaryKey(),
-
-	// Product information
-	barcode: t.varchar("barcode", { length: 50 }).notNull().unique(),
-	name: t.varchar("name", { length: 255 }).notNull(),
-	description: t.text("description"),
-	imageUrl: t.text("image_url"),
-	brandId: t
-		.uuid("brand_id")
-		.references(() => brandsTable.id)
+	productId: t
+		.uuid("product_id")
+		.references(() => productsTable.id, { onDelete: "cascade" })
 		.notNull(),
-	categoryId: t
-		.uuid("category_id")
-		.references(() => categoriesTable.id)
-		.notNull(),
-
-	// Nutritional information
-	energyKcal: t.integer("energy_kcal"),
-	fat: t.real("fat"),
-	carbs: t.real("carbs"),
-	protein: t.real("protein"),
-	salt: t.real("salt"),
-
-	// Timestamps
+	price: t.numeric("price", { precision: 10, scale: 2 }).notNull(),
+	quantity: t.integer("quantity").notNull(),
 	createdAt: t.timestamp("created_at").defaultNow().notNull(),
 	updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
-}), (t) => [uniqueIndex("idx_unique_barcode").on(t.barcode)]);
+}));
