@@ -58,7 +58,7 @@ function createProductRoute(database: DatabasePlugin) {
 				body: models.createProductBody,
 				response: {
 					201: models.productResponse,
-					404: models.brandNotFound.or(models.categoryNotFound),
+					404: z.union([models.brandNotFound, models.categoryNotFound]),
 					409: models.productAlreadyExists,
 					500: models.failedToCreateProduct,
 				},
@@ -259,9 +259,11 @@ function updateProductRoute(database: DatabasePlugin) {
 				body: models.updateProductBody,
 				response: {
 					200: models.productResponse,
-					404: models.productNotFound
-						.or(models.brandNotFound)
-						.or(models.categoryNotFound),
+					404: z.union([
+						models.productNotFound,
+						models.brandNotFound,
+						models.categoryNotFound,
+					]),
 					409: models.productAlreadyExists,
 					500: models.failedToUpdateProduct,
 				},

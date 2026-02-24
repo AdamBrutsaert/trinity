@@ -193,7 +193,7 @@ function updateStockRoute(database: DatabasePlugin) {
 				body: models.updateStockBody,
 				response: {
 					200: models.stockResponse,
-					404: models.stockNotFound.or(models.productNotFound),
+					404: z.union([models.stockNotFound, models.productNotFound]),
 					500: models.failedToUpdateStock,
 				},
 			},
