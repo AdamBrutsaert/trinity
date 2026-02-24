@@ -1,8 +1,10 @@
+import { eq } from "drizzle-orm";
+import { errAsync, okAsync, ResultAsync } from "neverthrow";
+
 import { errorMapper } from "@/errors";
 import type { Database } from "@/modules/database";
 import { stocksTable } from "@/modules/database/schema";
-import { eq } from "drizzle-orm";
-import { errAsync, okAsync, ResultAsync } from "neverthrow";
+
 import type * as models from "./models";
 
 export type CreateStockError =

@@ -1,3 +1,24 @@
+import {
+	afterAll,
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+} from "bun:test";
+import { SQL } from "bun";
+
+import {
+	PostgreSqlContainer,
+	type StartedPostgreSqlContainer,
+} from "@testcontainers/postgresql";
+import { Wait } from "testcontainers";
+
+import { treaty } from "@elysiajs/eden";
+import { drizzle } from "drizzle-orm/bun-sql";
+import { migrate } from "drizzle-orm/bun-sql/migrator";
+
 import { login } from "@/modules/auth/service";
 import { createBrand } from "@/modules/brands/service";
 import { createCategory } from "@/modules/categories/service";
@@ -8,24 +29,7 @@ import {
 } from "@/modules/database";
 import { createProduct } from "@/modules/products/service";
 import { createUser } from "@/modules/users/service";
-import { treaty } from "@elysiajs/eden";
-import {
-	PostgreSqlContainer,
-	type StartedPostgreSqlContainer,
-} from "@testcontainers/postgresql";
-import { SQL } from "bun";
-import {
-	afterAll,
-	afterEach,
-	beforeAll,
-	beforeEach,
-	describe,
-	expect,
-	it,
-} from "bun:test";
-import { drizzle } from "drizzle-orm/bun-sql";
-import { migrate } from "drizzle-orm/bun-sql/migrator";
-import { Wait } from "testcontainers";
+
 import { createStocksModule } from ".";
 
 async function createAdminUser(tx: Database) {

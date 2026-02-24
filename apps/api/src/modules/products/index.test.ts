@@ -1,18 +1,3 @@
-import { login } from "@/modules/auth/service";
-import { createBrand } from "@/modules/brands/service";
-import { createCategory } from "@/modules/categories/service";
-import {
-	createDatabaseConnection,
-	createDatabasePlugin,
-	type Database,
-} from "@/modules/database";
-import { createUser } from "@/modules/users/service";
-import { treaty } from "@elysiajs/eden";
-import {
-	PostgreSqlContainer,
-	type StartedPostgreSqlContainer,
-} from "@testcontainers/postgresql";
-import { SQL } from "bun";
 import {
 	afterAll,
 	afterEach,
@@ -22,9 +7,28 @@ import {
 	expect,
 	it,
 } from "bun:test";
+import { SQL } from "bun";
+
+import {
+	PostgreSqlContainer,
+	type StartedPostgreSqlContainer,
+} from "@testcontainers/postgresql";
+import { Wait } from "testcontainers";
+
+import { treaty } from "@elysiajs/eden";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { migrate } from "drizzle-orm/bun-sql/migrator";
-import { Wait } from "testcontainers";
+
+import { login } from "@/modules/auth/service";
+import { createBrand } from "@/modules/brands/service";
+import { createCategory } from "@/modules/categories/service";
+import {
+	createDatabaseConnection,
+	createDatabasePlugin,
+	type Database,
+} from "@/modules/database";
+import { createUser } from "@/modules/users/service";
+
 import { createProductsModule } from ".";
 
 async function createAdminUser(tx: Database) {
@@ -61,12 +65,12 @@ async function createCustomerUser(tx: Database) {
 	)._unsafeUnwrap().token;
 }
 
-async function createTestCategory(tx: Database, adminToken: string) {
+async function createTestCategory(tx: Database) {
 	const response = await createCategory(tx, "Test Category");
 	return response._unsafeUnwrap().id;
 }
 
-async function createTestBrand(tx: Database, adminToken: string) {
+async function createTestBrand(tx: Database) {
 	const response = await createBrand(tx, "Test Brand");
 	return response._unsafeUnwrap().id;
 }
@@ -145,7 +149,7 @@ describe("Products module", () => {
 
 		it("should return 404 for non-existent category", async () => {
 			const adminToken = await createAdminUser(connection);
-			const brandId = await createTestBrand(connection, adminToken);
+			const brandId = await createTestBrand(connection);
 
 			const response = await api.products.post(
 				{
@@ -162,7 +166,7 @@ describe("Products module", () => {
 
 		it("should return 404 for non-existent brand", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
 
 			const response = await api.products.post(
 				{
@@ -179,8 +183,8 @@ describe("Products module", () => {
 
 		it("should create a product", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const response = await api.products.post(
 				{
@@ -205,8 +209,8 @@ describe("Products module", () => {
 
 		it("shouldn't create a product with duplicate barcode", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const originalResponse = await api.products.post(
 				{
@@ -245,8 +249,8 @@ describe("Products module", () => {
 		it("should allow customers to find a product", async () => {
 			const adminToken = await createAdminUser(connection);
 			const customerToken = await createCustomerUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const response = await api.products.post(
 				{
@@ -271,8 +275,8 @@ describe("Products module", () => {
 
 		it("should find an existing product", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const response = await api.products.post(
 				{
@@ -323,8 +327,8 @@ describe("Products module", () => {
 		it("should allow customers to find a product by barcode", async () => {
 			const adminToken = await createAdminUser(connection);
 			const customerToken = await createCustomerUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const createResponse = await api.products.post(
 				{
@@ -347,8 +351,8 @@ describe("Products module", () => {
 
 		it("should allow admins to find a product by barcode", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const createResponse = await api.products.post(
 				{
@@ -380,8 +384,8 @@ describe("Products module", () => {
 		it("should return the correct product when multiple products exist", async () => {
 			const adminToken = await createAdminUser(connection);
 			const customerToken = await createCustomerUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			// Create multiple products
 			const response1 = await api.products.post(
@@ -433,8 +437,8 @@ describe("Products module", () => {
 		it("should allow customers to list products", async () => {
 			const adminToken = await createAdminUser(connection);
 			const customerToken = await createCustomerUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const response1 = await api.products.post(
 				{
@@ -469,8 +473,8 @@ describe("Products module", () => {
 
 		it("should return a list of products", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const response1 = await api.products.post(
 				{
@@ -562,8 +566,8 @@ describe("Products module", () => {
 
 		it("should return 404 for non-existing category", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const response = await api.products.post(
 				{
@@ -594,8 +598,8 @@ describe("Products module", () => {
 
 		it("should return 404 for non-existing brand", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const response = await api.products.post(
 				{
@@ -626,8 +630,8 @@ describe("Products module", () => {
 
 		it("should return 409 for barcode already in use by another product", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const response1 = await api.products.post(
 				{
@@ -671,8 +675,8 @@ describe("Products module", () => {
 
 		it("should update a product", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const response = await api.products.post(
 				{
@@ -734,8 +738,8 @@ describe("Products module", () => {
 
 		it("should delete a product", async () => {
 			const adminToken = await createAdminUser(connection);
-			const categoryId = await createTestCategory(connection, adminToken);
-			const brandId = await createTestBrand(connection, adminToken);
+			const categoryId = await createTestCategory(connection);
+			const brandId = await createTestBrand(connection);
 
 			const response = await api.products.post(
 				{

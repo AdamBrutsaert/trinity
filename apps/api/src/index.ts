@@ -1,3 +1,8 @@
+import { cors } from "@elysiajs/cors";
+import { openapi } from "@elysiajs/openapi";
+import { Elysia } from "elysia";
+import * as z from "zod";
+
 import { env } from "@/env";
 import { createAuthModule } from "@/modules/auth";
 import { createBrandsModule } from "@/modules/brands";
@@ -9,10 +14,6 @@ import {
 import { createProductsModule } from "@/modules/products";
 import { createStocksModule } from "@/modules/stocks";
 import { createUsersModule } from "@/modules/users";
-import { cors } from "@elysiajs/cors";
-import { openapi } from "@elysiajs/openapi";
-import { Elysia } from "elysia";
-import * as z from "zod";
 
 const databasePlugin = createDatabasePlugin(
 	createDatabaseConnection(env.DATABASE_URL),

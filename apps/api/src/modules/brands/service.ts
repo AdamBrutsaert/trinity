@@ -1,8 +1,9 @@
-import { errorMapper } from "@/errors";
-import type { Database } from "@/modules/database";
 import { eq } from "drizzle-orm";
 import { errAsync, okAsync, ResultAsync } from "neverthrow";
-import { brandsTable } from "../database/schema";
+
+import { errorMapper } from "@/errors";
+import type { Database } from "@/modules/database";
+import { brandsTable } from "@/modules/database/schema";
 
 export type CreateBrandError =
 	| {

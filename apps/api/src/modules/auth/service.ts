@@ -1,10 +1,12 @@
-import { env } from "@/env";
-import { errorMapper } from "@/errors";
-import type { Database } from "@/modules/database";
 import bcrypt from "bcryptjs";
 import { jwtVerify, SignJWT } from "jose";
 import { errAsync, okAsync, ResultAsync } from "neverthrow";
-import { createUser } from "../users/service";
+
+import { env } from "@/env";
+import { errorMapper } from "@/errors";
+import type { Database } from "@/modules/database";
+import { createUser } from "@/modules/users/service";
+
 import type * as models from "./model";
 
 function generateToken(userId: string, role: "customer" | "admin") {

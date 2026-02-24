@@ -1,9 +1,3 @@
-import { treaty } from "@elysiajs/eden";
-import {
-	PostgreSqlContainer,
-	type StartedPostgreSqlContainer,
-} from "@testcontainers/postgresql";
-import { SQL } from "bun";
 import {
 	afterAll,
 	afterEach,
@@ -13,11 +7,24 @@ import {
 	expect,
 	it,
 } from "bun:test";
+import { SQL } from "bun";
+
+import {
+	PostgreSqlContainer,
+	type StartedPostgreSqlContainer,
+} from "@testcontainers/postgresql";
+import { Wait } from "testcontainers";
+
+import { treaty } from "@elysiajs/eden";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { migrate } from "drizzle-orm/bun-sql/migrator";
-import { Wait } from "testcontainers";
+
+import {
+	createDatabaseConnection,
+	createDatabasePlugin,
+} from "@/modules/database";
+
 import { createAuthModule } from ".";
-import { createDatabaseConnection, createDatabasePlugin } from "../database";
 
 describe("Auth module", () => {
 	let container: StartedPostgreSqlContainer;

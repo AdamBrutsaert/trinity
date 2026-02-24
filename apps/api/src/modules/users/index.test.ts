@@ -1,9 +1,3 @@
-import { treaty } from "@elysiajs/eden";
-import {
-	PostgreSqlContainer,
-	type StartedPostgreSqlContainer,
-} from "@testcontainers/postgresql";
-import { SQL } from "bun";
 import {
 	afterAll,
 	afterEach,
@@ -13,16 +7,26 @@ import {
 	expect,
 	it,
 } from "bun:test";
+import { SQL } from "bun";
+
+import {
+	PostgreSqlContainer,
+	type StartedPostgreSqlContainer,
+} from "@testcontainers/postgresql";
+import { Wait } from "testcontainers";
+
+import { treaty } from "@elysiajs/eden";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { migrate } from "drizzle-orm/bun-sql/migrator";
-import { Wait } from "testcontainers";
-import { createUsersModule } from ".";
-import { login } from "../auth/service";
+
+import { login } from "@/modules/auth/service";
 import {
 	createDatabaseConnection,
 	createDatabasePlugin,
 	type Database,
-} from "../database";
+} from "@/modules/database";
+
+import { createUsersModule } from ".";
 import { createUser } from "./service";
 
 async function createAdminUser(tx: Database) {
