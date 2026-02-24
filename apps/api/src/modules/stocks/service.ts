@@ -20,7 +20,7 @@ export function createStock(tx: Database, body: models.createStockBody) {
 			.insert(stocksTable)
 			.values({
 				productId: body.productId,
-				price: body.price,
+				price: body.price.toString(),
 				quantity: body.quantity,
 			})
 			.returning({
@@ -148,7 +148,7 @@ export function updateStock(
 			.update(stocksTable)
 			.set({
 				productId: body.productId,
-				price: body.price,
+				price: body.price.toString(),
 				quantity: body.quantity,
 				updatedAt: new Date(),
 			})

@@ -20,7 +20,7 @@ function createStockRoute(database: DatabasePlugin) {
 					(res) =>
 						status(201, {
 							...res,
-							price: Math.round(res.price * 100) / 100,
+							price: Number.parseFloat(res.price),
 							createdAt: res.createdAt.toISOString(),
 							updatedAt: res.updatedAt.toISOString(),
 						}),
@@ -68,7 +68,7 @@ function getStockByIdRoute(database: DatabasePlugin) {
 					(res) =>
 						status(200, {
 							...res,
-							price: Math.round(res.price * 100) / 100,
+							price: Number.parseFloat(res.price),
 							createdAt: res.createdAt.toISOString(),
 							updatedAt: res.updatedAt.toISOString(),
 						}),
@@ -120,7 +120,7 @@ function getStocksRoute(database: DatabasePlugin) {
 							200,
 							res.map((stock) => ({
 								...stock,
-								price: Math.round(stock.price * 100) / 100,
+								price: Number.parseFloat(stock.price),
 								createdAt: stock.createdAt.toISOString(),
 								updatedAt: stock.updatedAt.toISOString(),
 							})),
@@ -156,7 +156,7 @@ function updateStockRoute(database: DatabasePlugin) {
 					(res) =>
 						status(200, {
 							...res,
-							price: Math.round(res.price * 100) / 100,
+							price: Number.parseFloat(res.price),
 							createdAt: res.createdAt.toISOString(),
 							updatedAt: res.updatedAt.toISOString(),
 						}),
@@ -191,7 +191,7 @@ function updateStockRoute(database: DatabasePlugin) {
 				body: models.updateStockBody,
 				response: {
 					200: models.stockResponse,
-					404: z.union([models.stockNotFound, models.productNotFound]),
+					404: models.stockNotFound.or(models.productNotFound),
 					500: models.failedToUpdateStock,
 				},
 			},

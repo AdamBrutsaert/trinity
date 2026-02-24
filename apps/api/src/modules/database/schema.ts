@@ -59,11 +59,11 @@ export const productsTable = pgTable(
 		imageUrl: t.text("image_url"),
 		brandId: t
 			.uuid("brand_id")
-			.references(() => brandsTable.id)
+			.references(() => brandsTable.id, { onDelete: "cascade" })
 			.notNull(),
 		categoryId: t
 			.uuid("category_id")
-			.references(() => categoriesTable.id)
+			.references(() => categoriesTable.id, { onDelete: "cascade" })
 			.notNull(),
 
 		// Nutritional information
@@ -84,9 +84,9 @@ export const stocksTable = pgTable("stocks", (t) => ({
 	id: t.uuid("id").defaultRandom().primaryKey(),
 	productId: t
 		.uuid("product_id")
-		.references(() => productsTable.id)
+		.references(() => productsTable.id, { onDelete: "cascade" })
 		.notNull(),
-	price: t.real("price").notNull(),
+	price: t.numeric("price", { precision: 10, scale: 2 }).notNull(),
 	quantity: t.integer("quantity").notNull(),
 	createdAt: t.timestamp("created_at").defaultNow().notNull(),
 	updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
