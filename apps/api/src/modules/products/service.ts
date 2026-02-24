@@ -141,6 +141,53 @@ export function getProductById(tx: Database, id: string) {
 	});
 }
 
+export type GetProductByBarcodeError =
+	| {
+			type: "product_not_found";
+			barcode: string;
+	  }
+	| {
+			type: "failed_to_fetch_product";
+	  };
+
+export function getProductByBarcode(tx: Database, barcode: string) {
+	return ResultAsync.fromPromise(
+		tx.query.productsTable.findFirst({
+			where: (table, { eq }) => eq(table.barcode, barcode),
+			columns: {
+				id: true,
+				barcode: true,
+				name: true,
+				description: true,
+				imageUrl: true,
+				brandId: true,
+				categoryId: true,
+				energyKcal: true,
+				fat: true,
+				carbs: true,
+				protein: true,
+				salt: true,
+				createdAt: true,
+				updatedAt: true,
+			},
+		}),
+		(err) =>
+			errorMapper<GetProductByBarcodeError>(err, {
+				default: () => ({
+					type: "failed_to_fetch_product",
+				}),
+			}),
+	).andThen((res) => {
+		if (!res) {
+			return errAsync({
+				type: "product_not_found",
+				barcode,
+			} satisfies GetProductByBarcodeError as GetProductByBarcodeError);
+		}
+		return okAsync(res);
+	});
+}
+
 export type GetProductsError = {
 	type: "failed_to_fetch_products";
 };

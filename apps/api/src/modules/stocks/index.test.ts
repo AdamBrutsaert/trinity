@@ -194,17 +194,35 @@ describe("Stocks module", () => {
 	});
 
 	describe("GET /:id", () => {
-		it("should return 401 or 403 for unauthenticated or customer find requests", async () => {
+		it("should return 401 for unauthenticated requests", async () => {
 			const response = await api
 				.stocks({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.get();
 			expect(response.status).toBe(401);
+		});
 
+		it("should allow customers to find a stock", async () => {
+			const adminToken = await createAdminUser(connection);
 			const customerToken = await createCustomerUser(connection);
-			const customerResponse = await api
-				.stocks({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+			const productId = await createTestProduct(connection);
+
+			const response = await api.stocks.post(
+				{
+					productId,
+					price: 9.99,
+					quantity: 100,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response.status).toBe(201);
+
+			// biome-ignore lint/style/noNonNullAssertion: status is checked above
+			const stockId = response.data!.id;
+			const stockResponse = await api
+				.stocks({ id: stockId })
 				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
-			expect(customerResponse.status).toBe(403);
+			expect(stockResponse.status).toBe(200);
+			expect(stockResponse.data).toEqual(response.data);
 		});
 
 		it("should find an existing stock", async () => {
@@ -248,15 +266,41 @@ describe("Stocks module", () => {
 	});
 
 	describe("GET /", () => {
-		it("should return 401 or 403 for unauthenticated requests", async () => {
+		it("should return 401 for unauthenticated requests", async () => {
 			const response = await api.stocks.get();
 			expect(response.status).toBe(401);
+		});
 
+		it("should allow customers to list stocks", async () => {
+			const adminToken = await createAdminUser(connection);
 			const customerToken = await createCustomerUser(connection);
-			const customerResponse = await api.stocks.get({
+			const productId = await createTestProduct(connection);
+
+			const response1 = await api.stocks.post(
+				{
+					productId,
+					price: 9.99,
+					quantity: 100,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response1.status).toBe(201);
+
+			const response2 = await api.stocks.post(
+				{
+					productId,
+					price: 14.99,
+					quantity: 50,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response2.status).toBe(201);
+
+			const response = await api.stocks.get({
 				headers: { Authorization: `Bearer ${customerToken}` },
 			});
-			expect(customerResponse.status).toBe(403);
+			expect(response.status).toBe(200);
+			expect(response.data).toHaveLength(2);
 		});
 
 		it("should return a list of stocks", async () => {

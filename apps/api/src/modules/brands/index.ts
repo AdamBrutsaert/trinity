@@ -89,7 +89,7 @@ function getBrandByIdRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
+				customer: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -130,7 +130,7 @@ function getBrandsRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
+				customer: true,
 				response: {
 					200: models.brandListResponse,
 					500: models.failedToFetchBrands,

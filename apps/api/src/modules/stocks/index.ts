@@ -91,7 +91,7 @@ function getStockByIdRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
+				customer: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -133,7 +133,7 @@ function getStocksRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
+				customer: true,
 				response: {
 					200: models.stockListResponse,
 					500: models.failedToFetchStocks,

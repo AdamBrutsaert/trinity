@@ -162,17 +162,32 @@ describe("Categories module", () => {
 	});
 
 	describe("GET /:id", () => {
-		it("should return 401 or 403 for unauthenticated or customer find requests", async () => {
+		it("should return 401 for unauthenticated requests", async () => {
 			const response = await api
 				.categories({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.get();
 			expect(response.status).toBe(401);
+		});
 
+		it("should allow customers to find a category", async () => {
+			const adminToken = await createAdminUser(connection);
 			const customerToken = await createCustomerUser(connection);
-			const customerResponse = await api
-				.categories({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+
+			const response = await api.categories.post(
+				{
+					name: "Test Category",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response.status).toBe(201);
+
+			// biome-ignore lint/style/noNonNullAssertion: status is checked above
+			const categoryId = response.data!.id;
+			const categoryResponse = await api
+				.categories({ id: categoryId })
 				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
-			expect(customerResponse.status).toBe(403);
+			expect(categoryResponse.status).toBe(200);
+			expect(categoryResponse.data).toEqual(response.data);
 		});
 
 		it("should find an existing category", async () => {
@@ -213,15 +228,36 @@ describe("Categories module", () => {
 	});
 
 	describe("GET /", () => {
-		it("should return 401 or 403 for unauthenticated requests", async () => {
+		it("should return 401 for unauthenticated requests", async () => {
 			const response = await api.categories.get();
 			expect(response.status).toBe(401);
+		});
 
+		it("should allow customers to list categories", async () => {
+			const adminToken = await createAdminUser(connection);
 			const customerToken = await createCustomerUser(connection);
-			const customerResponse = await api.categories.get({
+
+			const response1 = await api.categories.post(
+				{
+					name: "Test Category 1",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response1.status).toBe(201);
+
+			const response2 = await api.categories.post(
+				{
+					name: "Test Category 2",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response2.status).toBe(201);
+
+			const response = await api.categories.get({
 				headers: { Authorization: `Bearer ${customerToken}` },
 			});
-			expect(customerResponse.status).toBe(403);
+			expect(response.status).toBe(200);
+			expect(response.data).toHaveLength(2);
 		});
 
 		it("should return a list of categories", async () => {
