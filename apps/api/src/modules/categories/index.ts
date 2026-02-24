@@ -89,7 +89,7 @@ function getCategoryByIdRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
+				customer: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -130,7 +130,7 @@ function getCategoriesRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
+				customer: true,
 				response: {
 					200: models.categoryListResponse,
 					500: models.failedToFetchCategories,

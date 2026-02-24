@@ -100,7 +100,7 @@ function getProductByIdRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
+				customer: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -190,7 +190,7 @@ function getProductsRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
+				customer: true,
 				response: {
 					200: models.productListResponse,
 					500: models.failedToFetchProducts,
