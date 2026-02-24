@@ -7,6 +7,7 @@ import {
 	createDatabasePlugin,
 } from "@/modules/database";
 import { createProductsModule } from "@/modules/products";
+import { createStocksModule } from "@/modules/stocks";
 import { createUsersModule } from "@/modules/users";
 import { cors } from "@elysiajs/cors";
 import { openapi } from "@elysiajs/openapi";
@@ -43,6 +44,7 @@ const app = new Elysia()
 	.use(createBrandsModule(databasePlugin))
 	.use(createCategoriesModule(databasePlugin))
 	.use(createProductsModule(databasePlugin))
+	.use(createStocksModule(databasePlugin))
 	.listen({
 		port: 3000,
 		hostname: "0.0.0.0",
