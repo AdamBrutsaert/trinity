@@ -1,3 +1,4 @@
+import { createUser } from "@/modules/users/service";
 import { treaty } from "@elysiajs/eden";
 import {
 	PostgreSqlContainer,
@@ -16,14 +17,13 @@ import {
 import { drizzle } from "drizzle-orm/bun-sql";
 import { migrate } from "drizzle-orm/bun-sql/migrator";
 import { Wait } from "testcontainers";
-import { createUserModule } from ".";
+import { createBrandsModule } from ".";
 import { login } from "../auth/service";
 import {
 	createDatabaseConnection,
 	createDatabasePlugin,
 	type Database,
 } from "../database";
-import { createUser } from "./service";
 
 async function createAdminUser(tx: Database) {
 	await createUser(tx, {
@@ -62,7 +62,7 @@ async function createCustomerUser(tx: Database) {
 describe("User module", () => {
 	let container: StartedPostgreSqlContainer;
 	let connection: ReturnType<typeof createDatabaseConnection>;
-	let api: ReturnType<typeof treaty<ReturnType<typeof createUserModule>>>;
+	let api: ReturnType<typeof treaty<ReturnType<typeof createBrandsModule>>>;
 
 	beforeAll(async () => {
 		container = await new PostgreSqlContainer(
@@ -97,7 +97,7 @@ describe("User module", () => {
 		connection = createDatabaseConnection(
 			`postgresql://${container.getUsername()}:${container.getPassword()}@${container.getHost()}:${container.getPort()}/db_test`,
 		);
-		api = treaty(createUserModule(createDatabasePlugin(connection)));
+		api = treaty(createBrandsModule(createDatabasePlugin(connection)));
 	});
 
 	afterEach(async () => {
@@ -108,80 +108,52 @@ describe("User module", () => {
 
 	describe("POST /", () => {
 		it("should return 401 or 403 for unauthenticated or customer creation requests", async () => {
-			const response = await api.users.post({
-				email: "john.doe@example.com",
-				password: "password123",
-				firstName: "John",
-				lastName: "Doe",
-				role: "customer",
+			const response = await api.brands.post({
+				name: "Test Brand",
 			});
 			expect(response.status).toBe(401);
 
 			const customerToken = await createCustomerUser(connection);
-			const customerResponse = await api.users.post(
+			const customerResponse = await api.brands.post(
 				{
-					email: "john.doe@example.com",
-					password: "password123",
-					firstName: "John",
-					lastName: "Doe",
-					role: "customer",
+					name: "Test Brand",
 				},
 				{ headers: { Authorization: `Bearer ${customerToken}` } },
 			);
 			expect(customerResponse.status).toBe(403);
 		});
 
-		it("should create an user", async () => {
+		it("should create a brand", async () => {
 			const adminToken = await createAdminUser(connection);
 
-			const response = await api.users.post(
+			const response = await api.brands.post(
 				{
-					email: "john.doe@example.com",
-					password: "password123",
-					firstName: "John",
-					lastName: "Doe",
-					role: "customer",
+					name: "Test Brand",
 				},
 				{ headers: { Authorization: `Bearer ${adminToken}` } },
 			);
 
 			expect(response.status).toBe(201);
 			expect(response.data).toHaveProperty("id");
-			expect(response.data?.email).toBe("john.doe@example.com");
-			expect(response.data?.firstName).toBe("John");
-			expect(response.data?.lastName).toBe("Doe");
-			expect(response.data?.phoneNumber).toBeNull();
-			expect(response.data?.address).toBeNull();
-			expect(response.data?.zipCode).toBeNull();
-			expect(response.data?.city).toBeNull();
-			expect(response.data?.country).toBeNull();
-			expect(response.data?.role).toBe("customer");
+			expect(response.data).toHaveProperty("name", "Test Brand");
 			expect(response.data).toHaveProperty("createdAt");
 			expect(response.data).toHaveProperty("updatedAt");
 		});
 
-		it("should not create an user with an existing email", async () => {
+		it("should not create a brand with an existing name", async () => {
 			const adminToken = await createAdminUser(connection);
 
-			const response = await api.users.post(
+			const response = await api.brands.post(
 				{
-					email: "john.doe@example.com",
-					password: "password123",
-					firstName: "John",
-					lastName: "Doe",
-					role: "customer",
+					name: "Test Brand",
 				},
 				{ headers: { Authorization: `Bearer ${adminToken}` } },
 			);
 			expect(response.status).toBe(201);
 
-			const duplicateResponse = await api.users.post(
+			const duplicateResponse = await api.brands.post(
 				{
-					email: "john.doe@example.com",
-					password: "password123",
-					firstName: "John",
-					lastName: "Doe",
-					role: "customer",
+					name: "Test Brand",
 				},
 				{ headers: { Authorization: `Bearer ${adminToken}` } },
 			);
@@ -192,109 +164,97 @@ describe("User module", () => {
 	describe("GET /:id", () => {
 		it("should return 401 or 403 for unauthenticated or customer find requests", async () => {
 			const response = await api
-				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.brands({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.get();
 			expect(response.status).toBe(401);
 
 			const customerToken = await createCustomerUser(connection);
 			const customerResponse = await api
-				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.brands({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
 			expect(customerResponse.status).toBe(403);
 		});
 
-		it("should find an existing user", async () => {
+		it("should find an existing brand", async () => {
 			const adminToken = await createAdminUser(connection);
 
-			const response = await api.users.post(
+			const response = await api.brands.post(
 				{
-					email: "john.doe@example.com",
-					password: "password123",
-					firstName: "John",
-					lastName: "Doe",
-					role: "customer",
+					name: "Test Brand",
 				},
 				{ headers: { Authorization: `Bearer ${adminToken}` } },
 			);
 			expect(response.status).toBe(201);
 
 			// biome-ignore lint/style/noNonNullAssertion: status is checked above
-			const userId = response.data!.id;
-			const userResponse = await api
-				.users({ id: userId })
+			const brandId = response.data!.id;
+			const brandResponse = await api
+				.brands({ id: brandId })
 				.get({ headers: { Authorization: `Bearer ${adminToken}` } });
-			expect(userResponse.status).toBe(200);
-			expect(userResponse.data).toEqual(response.data);
+			expect(brandResponse.status).toBe(200);
+			expect(brandResponse.data).toEqual(response.data);
 		});
 
-		it("should return 404 for non-existing user", async () => {
+		it("should return 404 for non-existing brand", async () => {
 			const adminToken = await createAdminUser(connection);
-			const userResponse = await api
-				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+			const brandResponse = await api
+				.brands({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.get({ headers: { Authorization: `Bearer ${adminToken}` } });
-			expect(userResponse.status).toBe(404);
+			expect(brandResponse.status).toBe(404);
 		});
 
-		it("should return 422 for invalid user ID", async () => {
+		it("should return 422 for invalid brand ID", async () => {
 			const adminToken = await createAdminUser(connection);
-			const userResponse = await api
-				.users({ id: "invalid-uuid" })
+			const brandResponse = await api
+				.brands({ id: "invalid-uuid" })
 				.get({ headers: { Authorization: `Bearer ${adminToken}` } });
-			expect(userResponse.status).toBe(422);
+			expect(brandResponse.status).toBe(422);
 		});
 	});
 
 	describe("GET /", () => {
-		it("should return 401 for unauthenticated requests", async () => {
-			const response = await api.users.get();
+		it("should return 401 or 403 for unauthenticated requests", async () => {
+			const response = await api.brands.get();
 			expect(response.status).toBe(401);
 
 			const customerToken = await createCustomerUser(connection);
-			const customerResponse = await api.users.get({
+			const customerResponse = await api.brands.get({
 				headers: { Authorization: `Bearer ${customerToken}` },
 			});
 			expect(customerResponse.status).toBe(403);
 		});
 
-		it("should return a list of users", async () => {
+		it("should return a list of brands", async () => {
 			const adminToken = await createAdminUser(connection);
 
-			const response1 = await api.users.post(
+			const response1 = await api.brands.post(
 				{
-					email: "john.doe@example.com",
-					password: "password123",
-					firstName: "John",
-					lastName: "Doe",
-					role: "customer",
+					name: "Test Brand 1",
 				},
 				{ headers: { Authorization: `Bearer ${adminToken}` } },
 			);
 			expect(response1.status).toBe(201);
 
-			const response2 = await api.users.post(
+			const response2 = await api.brands.post(
 				{
-					email: "jane.doe@example.com",
-					password: "password123",
-					firstName: "Jane",
-					lastName: "Doe",
-					role: "customer",
+					name: "Test Brand 2",
 				},
 				{ headers: { Authorization: `Bearer ${adminToken}` } },
 			);
 			expect(response2.status).toBe(201);
 
-			const response = await api.users.get({
+			const response = await api.brands.get({
 				headers: { Authorization: `Bearer ${adminToken}` },
 			});
 			expect(response.status).toBe(200);
-			expect(response.data).toHaveLength(3);
+			expect(response.data).toHaveLength(2);
 			expect(response.data).toEqual(
 				expect.arrayContaining([
 					expect.objectContaining({
-						email: "john.doe@example.com",
+						name: "Test Brand 1",
 					}),
 					expect.objectContaining({
-						email: "jane.doe@example.com",
+						name: "Test Brand 2",
 					}),
 				]),
 			);
@@ -304,86 +264,51 @@ describe("User module", () => {
 	describe("PUT /:id", () => {
 		it("should return 401 or 403 for unauthenticated or customer update requests", async () => {
 			const response = await api
-				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.brands({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.put({
-					email: "john.doe@example.com",
-					password: "password123",
-					firstName: "John",
-					lastName: "Doe",
-					role: "customer",
-					address: null,
-					city: null,
-					country: null,
-					phoneNumber: null,
-					zipCode: null,
+					name: "Updated Brand",
 				});
 			expect(response.status).toBe(401);
 
 			const customerToken = await createCustomerUser(connection);
 			const customerResponse = await api
-				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.brands({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.put(
 					{
-						email: "john.doe@example.com",
-						password: "password123",
-						firstName: "John",
-						lastName: "Doe",
-						role: "customer",
-						address: null,
-						city: null,
-						country: null,
-						phoneNumber: null,
-						zipCode: null,
+						name: "Updated Brand",
 					},
 					{ headers: { Authorization: `Bearer ${customerToken}` } },
 				);
 			expect(customerResponse.status).toBe(403);
 		});
 
-		it("should return 404 for non-existing user", async () => {
+		it("should return 404 for non-existing brand", async () => {
 			const adminToken = await createAdminUser(connection);
 			const response = await api
-				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.brands({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.put(
 					{
-						email: "john.doe@example.com",
-						password: "password123",
-						firstName: "John",
-						lastName: "Doe",
-						role: "customer",
-						address: null,
-						city: null,
-						country: null,
-						phoneNumber: null,
-						zipCode: null,
+						name: "Updated Brand",
 					},
 					{ headers: { Authorization: `Bearer ${adminToken}` } },
 				);
 			expect(response.status).toBe(404);
 		});
 
-		it("should return 409 for email already in use by another user", async () => {
+		it("should return 409 for name already in use by another brand", async () => {
 			const adminToken = await createAdminUser(connection);
 
-			const response1 = await api.users.post(
+			const response1 = await api.brands.post(
 				{
-					email: "john.doe@example.com",
-					password: "password123",
-					firstName: "John",
-					lastName: "Doe",
-					role: "customer",
+					name: "Test Brand",
 				},
 				{ headers: { Authorization: `Bearer ${adminToken}` } },
 			);
 			expect(response1.status).toBe(201);
 
-			const response2 = await api.users.post(
+			const response2 = await api.brands.post(
 				{
-					email: "jane.doe@example.com",
-					password: "password123",
-					firstName: "Jane",
-					lastName: "Doe",
-					role: "customer",
+					name: "Another Brand",
 				},
 				{ headers: { Authorization: `Bearer ${adminToken}` } },
 			);
@@ -391,35 +316,22 @@ describe("User module", () => {
 
 			const response = await api
 				// biome-ignore lint/style/noNonNullAssertion: asserted before
-				.users({ id: response2.data!.id })
+				.brands({ id: response2.data!.id })
 				.put(
 					{
-						email: "john.doe@example.com",
-						password: "password123",
-						firstName: "John",
-						lastName: "Doe",
-						role: "customer",
-						address: null,
-						city: null,
-						country: null,
-						phoneNumber: null,
-						zipCode: null,
+						name: "Test Brand",
 					},
 					{ headers: { Authorization: `Bearer ${adminToken}` } },
 				);
 			expect(response.status).toBe(409);
 		});
 
-		it("should update an existing user", async () => {
+		it("should update an existing brands", async () => {
 			const adminToken = await createAdminUser(connection);
 
-			const response1 = await api.users.post(
+			const response1 = await api.brands.post(
 				{
-					email: "john.doe@example.com",
-					password: "password123",
-					firstName: "John",
-					lastName: "Doe",
-					role: "customer",
+					name: "Test Brand",
 				},
 				{ headers: { Authorization: `Bearer ${adminToken}` } },
 			);
@@ -427,19 +339,10 @@ describe("User module", () => {
 
 			const response = await api
 				// biome-ignore lint/style/noNonNullAssertion: asserted before
-				.users({ id: response1.data!.id })
+				.brands({ id: response1.data!.id })
 				.put(
 					{
-						email: "john.doe@example.com",
-						password: "otherpassword123",
-						firstName: "Johnny",
-						lastName: "Doe",
-						role: "customer",
-						address: null,
-						city: null,
-						country: null,
-						phoneNumber: null,
-						zipCode: null,
+						name: "Updated Test Brand",
 					},
 					{ headers: { Authorization: `Bearer ${adminToken}` } },
 				);
@@ -450,35 +353,31 @@ describe("User module", () => {
 	describe("DELETE /:id", () => {
 		it("should return 401 or 403 for unauthenticated or customer delete requests", async () => {
 			const response = await api
-				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.brands({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.delete();
 			expect(response.status).toBe(401);
 
 			const customerToken = await createCustomerUser(connection);
 			const customerResponse = await api
-				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.brands({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.delete({}, { headers: { authorization: `Bearer ${customerToken}` } });
 			expect(customerResponse.status).toBe(403);
 		});
 
-		it("should return 404 for non-existing user", async () => {
+		it("should return 404 for non-existing brand", async () => {
 			const adminToken = await createAdminUser(connection);
 			const response = await api
-				.users({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.brands({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
 				.delete({}, { headers: { Authorization: `Bearer ${adminToken}` } });
 			expect(response.status).toBe(404);
 		});
 
-		it("should delete an existing user", async () => {
+		it("should delete an existing brand", async () => {
 			const adminToken = await createAdminUser(connection);
 
-			const response1 = await api.users.post(
+			const response1 = await api.brands.post(
 				{
-					email: "john.doe@example.com",
-					password: "password123",
-					firstName: "John",
-					lastName: "Doe",
-					role: "customer",
+					name: "Test Brand",
 				},
 				{ headers: { Authorization: `Bearer ${adminToken}` } },
 			);
@@ -486,7 +385,7 @@ describe("User module", () => {
 
 			const response = await api
 				// biome-ignore lint/style/noNonNullAssertion: asserted before
-				.users({ id: response1.data!.id })
+				.brands({ id: response1.data!.id })
 				.delete({}, { headers: { Authorization: `Bearer ${adminToken}` } });
 			expect(response.status).toBe(204);
 		});
