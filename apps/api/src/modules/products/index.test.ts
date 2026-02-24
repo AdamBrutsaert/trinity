@@ -291,6 +291,118 @@ describe("Products module", () => {
 		});
 	});
 
+	describe("GET /barcode/:barcode", () => {
+		it("should return 401 for unauthenticated requests", async () => {
+			const response = await api.products
+				.barcode({ barcode: "123456789" })
+				.get();
+			expect(response.status).toBe(401);
+		});
+
+		it("should allow customers to find a product by barcode", async () => {
+			const adminToken = await createAdminUser(connection);
+			const customerToken = await createCustomerUser(connection);
+			const categoryId = await createTestCategory(connection, adminToken);
+			const brandId = await createTestBrand(connection, adminToken);
+
+			const createResponse = await api.products.post(
+				{
+					barcode: "123456789",
+					name: "Test Product",
+					description: "Test Description",
+					categoryId,
+					brandId,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(createResponse.status).toBe(201);
+
+			const response = await api.products
+				.barcode({ barcode: "123456789" })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+			expect(response.status).toBe(200);
+			expect(response.data).toEqual(createResponse.data);
+		});
+
+		it("should allow admins to find a product by barcode", async () => {
+			const adminToken = await createAdminUser(connection);
+			const categoryId = await createTestCategory(connection, adminToken);
+			const brandId = await createTestBrand(connection, adminToken);
+
+			const createResponse = await api.products.post(
+				{
+					barcode: "987654321",
+					name: "Test Product 2",
+					description: "Test Description 2",
+					categoryId,
+					brandId,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(createResponse.status).toBe(201);
+
+			const response = await api.products
+				.barcode({ barcode: "987654321" })
+				.get({ headers: { Authorization: `Bearer ${adminToken}` } });
+			expect(response.status).toBe(200);
+			expect(response.data).toEqual(createResponse.data);
+		});
+
+		it("should return 404 for non-existent barcode", async () => {
+			const customerToken = await createCustomerUser(connection);
+			const response = await api.products
+				.barcode({ barcode: "nonexistent" })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+			expect(response.status).toBe(404);
+		});
+
+		it("should return the correct product when multiple products exist", async () => {
+			const adminToken = await createAdminUser(connection);
+			const customerToken = await createCustomerUser(connection);
+			const categoryId = await createTestCategory(connection, adminToken);
+			const brandId = await createTestBrand(connection, adminToken);
+
+			// Create multiple products
+			const response1 = await api.products.post(
+				{
+					barcode: "111111111",
+					name: "Product 1",
+					description: "Description 1",
+					categoryId,
+					brandId,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response1.status).toBe(201);
+
+			const response2 = await api.products.post(
+				{
+					barcode: "222222222",
+					name: "Product 2",
+					description: "Description 2",
+					categoryId,
+					brandId,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(response2.status).toBe(201);
+
+			// Find by first barcode
+			const findResponse1 = await api.products
+				.barcode({ barcode: "111111111" })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+			expect(findResponse1.status).toBe(200);
+			expect(findResponse1.data).toEqual(response1.data);
+
+			// Find by second barcode
+			const findResponse2 = await api.products
+				.barcode({ barcode: "222222222" })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+			expect(findResponse2.status).toBe(200);
+			expect(findResponse2.data).toEqual(response2.data);
+		});
+	});
+
 	describe("GET /", () => {
 		it("should return 401 or 403 for unauthenticated requests", async () => {
 			const response = await api.products.get();

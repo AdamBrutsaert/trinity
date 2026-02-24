@@ -113,6 +113,55 @@ function getProductByIdRoute(database: DatabasePlugin) {
 		);
 }
 
+function getProductByBarcodeRoute(database: DatabasePlugin) {
+	return new Elysia()
+		.use(database)
+		.use(auth)
+		.get(
+			"/barcode/:barcode",
+			async ({ params, database }) => {
+				const result = await database.transaction(async (tx) => {
+					return await service.getProductByBarcode(tx, params.barcode);
+				});
+				return result.match(
+					(res) =>
+						status(200, {
+							...res,
+							createdAt: res.createdAt.toISOString(),
+							updatedAt: res.updatedAt.toISOString(),
+						}),
+					(err) => {
+						switch (err.type) {
+							case "product_not_found":
+								return status(
+									404,
+									"Product not found" satisfies models.productNotFound,
+								);
+							case "failed_to_fetch_product":
+								return status(
+									500,
+									"Failed to fetch product" satisfies models.failedToFetchProduct,
+								);
+							default:
+								assertNever(err);
+						}
+					},
+				);
+			},
+			{
+				customer: true,
+				params: z.object({
+					barcode: z.string().min(1).max(50),
+				}),
+				response: {
+					200: models.productResponse,
+					404: models.productNotFound,
+					500: models.failedToFetchProduct,
+				},
+			},
+		);
+}
+
 function getProductsRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
@@ -266,6 +315,7 @@ export function createProductsModule(database: DatabasePlugin) {
 	return new Elysia({ name: "products", prefix: "/products" })
 		.use(createProductRoute(database))
 		.use(getProductByIdRoute(database))
+		.use(getProductByBarcodeRoute(database))
 		.use(getProductsRoute(database))
 		.use(updateProductRoute(database))
 		.use(deleteProductRoute(database));
