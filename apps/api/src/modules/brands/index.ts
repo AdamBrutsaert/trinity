@@ -242,7 +242,7 @@ function deleteBrandRoute(database: DatabasePlugin) {
 }
 
 export function createBrandsModule(database: DatabasePlugin) {
-	return new Elysia({ name: "brands", prefix: "/brands" })
+	return new Elysia({ name: "brands", prefix: "/brands", tags: ["brands"] })
 		.use(createBrandRoute(database))
 		.use(getBrandByIdRoute(database))
 		.use(getBrandsRoute(database))

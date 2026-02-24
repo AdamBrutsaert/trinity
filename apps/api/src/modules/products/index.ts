@@ -316,7 +316,11 @@ function deleteProductRoute(database: DatabasePlugin) {
 }
 
 export function createProductsModule(database: DatabasePlugin) {
-	return new Elysia({ name: "products", prefix: "/products" })
+	return new Elysia({
+		name: "products",
+		prefix: "/products",
+		tags: ["products"],
+	})
 		.use(createProductRoute(database))
 		.use(getProductByIdRoute(database))
 		.use(getProductByBarcodeRoute(database))

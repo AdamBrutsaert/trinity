@@ -83,7 +83,7 @@ function loginRoute(database: DatabasePlugin) {
 }
 
 export function createAuthModule(database: DatabasePlugin) {
-	return new Elysia({ name: "auth", prefix: "/auth" })
+	return new Elysia({ name: "auth", prefix: "/auth", tags: ["auth"] })
 		.use(registerRoute(database))
 		.use(loginRoute(database));
 }

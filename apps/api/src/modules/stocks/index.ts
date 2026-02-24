@@ -245,7 +245,7 @@ function deleteStockRoute(database: DatabasePlugin) {
 }
 
 export function createStocksModule(database: DatabasePlugin) {
-	return new Elysia({ name: "stocks", prefix: "/stocks" })
+	return new Elysia({ name: "stocks", prefix: "/stocks", tags: ["stocks"] })
 		.use(createStockRoute(database))
 		.use(getStockByIdRoute(database))
 		.use(getStocksRoute(database))

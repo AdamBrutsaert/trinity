@@ -242,7 +242,7 @@ function deleteUserRoute(database: DatabasePlugin) {
 }
 
 export function createUsersModule(database: DatabasePlugin) {
-	return new Elysia({ name: "users", prefix: "/users" })
+	return new Elysia({ name: "users", prefix: "/users", tags: ["users"] })
 		.use(createUserRoute(database))
 		.use(getUserByIdRoute(database))
 		.use(getUsersRoute(database))

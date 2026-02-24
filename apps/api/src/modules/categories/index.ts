@@ -242,7 +242,11 @@ function deleteCategoryRoute(database: DatabasePlugin) {
 }
 
 export function createCategoriesModule(database: DatabasePlugin) {
-	return new Elysia({ name: "categories", prefix: "/categories" })
+	return new Elysia({
+		name: "categories",
+		prefix: "/categories",
+		tags: ["categories"],
+	})
 		.use(createCategoryRoute(database))
 		.use(getCategoryByIdRoute(database))
 		.use(getCategoriesRoute(database))
