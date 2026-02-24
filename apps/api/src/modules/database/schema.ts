@@ -66,12 +66,12 @@ export const productsTable = pgTable("products", (t) => ({
 
 	// Nutritional information
 	energyKcal: t.integer("energy_kcal"),
-	fat: t.numeric("fat", { precision: 5, scale: 2 }),
-	carbs: t.numeric("carbs", { precision: 5, scale: 2 }),
-	protein: t.numeric("protein", { precision: 5, scale: 2 }),
-	salt: t.numeric("salt", { precision: 5, scale: 2 }),
+	fat: t.real("fat"),
+	carbs: t.real("carbs"),
+	protein: t.real("protein"),
+	salt: t.real("salt"),
 
 	// Timestamps
 	createdAt: t.timestamp("created_at").defaultNow().notNull(),
 	updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
-}));
+}), (t) => [uniqueIndex("idx_unique_barcode").on(t.barcode)]);

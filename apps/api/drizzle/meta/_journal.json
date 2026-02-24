@@ -5,15 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1770323959851,
-      "tag": "0000_same_norrin_radd",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1771340642024,
-      "tag": "0001_abandoned_squadron_sinister",
+      "when": 1771936715629,
+      "tag": "0000_minor_warpath",
       "breakpoints": true
     }
   ]
