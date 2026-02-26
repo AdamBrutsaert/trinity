@@ -2,7 +2,7 @@ import Elysia, { status } from "elysia";
 import * as z from "zod";
 
 import { assertNever } from "../../errors";
-import { auth } from "../auth/macro";
+import { authGuard } from "../auth/middleware";
 import type { DatabasePlugin } from "../database";
 import * as models from "./model";
 import * as service from "./service";
@@ -10,7 +10,7 @@ import * as service from "./service";
 function createUserRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.post(
 			"/",
 			async ({ body, database }) => {
@@ -43,7 +43,6 @@ function createUserRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				body: models.createUserBody,
 				response: {
 					201: models.userResponse,
@@ -57,7 +56,7 @@ function createUserRoute(database: DatabasePlugin) {
 function getUserByIdRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.get(
 			"/:id",
 			async ({ params, database }) => {
@@ -106,7 +105,7 @@ function getUserByIdRoute(database: DatabasePlugin) {
 function getUsersRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.get(
 			"/",
 			async ({ database }) => {
@@ -131,7 +130,6 @@ function getUsersRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				response: {
 					200: models.userListResponse,
 					500: models.failedToFetchUsers,
@@ -143,7 +141,7 @@ function getUsersRoute(database: DatabasePlugin) {
 function updateUserRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.put(
 			"/:id",
 			async ({ params, body, database }) => {
@@ -181,7 +179,6 @@ function updateUserRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -199,7 +196,7 @@ function updateUserRoute(database: DatabasePlugin) {
 function deleteUserRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.delete(
 			"/:id",
 			async ({ params, database }) => {
@@ -227,7 +224,6 @@ function deleteUserRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),

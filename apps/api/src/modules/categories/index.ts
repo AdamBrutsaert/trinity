@@ -2,7 +2,7 @@ import Elysia, { status } from "elysia";
 import z from "zod";
 
 import { assertNever } from "../../errors";
-import { auth } from "../auth/macro";
+import { authGuard } from "../auth/middleware";
 import type { DatabasePlugin } from "../database";
 import * as models from "./models";
 import * as service from "./service";
@@ -10,7 +10,7 @@ import * as service from "./service";
 function createCategoryRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.post(
 			"/",
 			async ({ body, database }) => {
@@ -43,7 +43,6 @@ function createCategoryRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				body: models.createCategoryBody,
 				response: {
 					201: models.categoryResponse,
@@ -57,7 +56,7 @@ function createCategoryRoute(database: DatabasePlugin) {
 function getCategoryByIdRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.get(
 			"/:id",
 			async ({ params, database }) => {
@@ -90,7 +89,6 @@ function getCategoryByIdRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -106,7 +104,7 @@ function getCategoryByIdRoute(database: DatabasePlugin) {
 function getCategoriesRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.get(
 			"/",
 			async ({ database }) => {
@@ -131,7 +129,6 @@ function getCategoriesRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				response: {
 					200: models.categoryListResponse,
 					500: models.failedToFetchCategories,
@@ -143,7 +140,7 @@ function getCategoriesRoute(database: DatabasePlugin) {
 function updateCategoryRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.put(
 			"/:id",
 			async ({ params, body, database }) => {
@@ -181,7 +178,6 @@ function updateCategoryRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -199,7 +195,7 @@ function updateCategoryRoute(database: DatabasePlugin) {
 function deleteCategoryRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.delete(
 			"/:id",
 			async ({ params, database }) => {
@@ -227,7 +223,6 @@ function deleteCategoryRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),

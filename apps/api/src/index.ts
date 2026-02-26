@@ -6,6 +6,7 @@ import * as z from "zod";
 import { env } from "./env";
 import { createAuthModule } from "./modules/auth";
 import { createBrandsModule } from "./modules/brands";
+import { createCartModule } from "./modules/cart";
 import { createCategoriesModule } from "./modules/categories";
 import {
 	createDatabaseConnection,
@@ -48,6 +49,7 @@ const app = new Elysia()
 	.use(createBrandsModule(databasePlugin))
 	.use(createCategoriesModule(databasePlugin))
 	.use(createProductsModule(databasePlugin))
-	.use(createStocksModule(databasePlugin));
+	.use(createStocksModule(databasePlugin))
+	.use(createCartModule(databasePlugin));
 
 export default app;
