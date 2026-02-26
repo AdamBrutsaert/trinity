@@ -140,6 +140,47 @@ function getStocksRoute(database: DatabasePlugin) {
 		);
 }
 
+function getStocksByProductIdRoute(database: DatabasePlugin) {
+	return new Elysia()
+		.use(database)
+		.use(authGuard("customer"))
+		.get(
+			"/products/:productId",
+			async ({ params, database }) => {
+				const result = await database.transaction(
+					async (tx) =>
+						await service.getStocksByProductId(tx, params.productId),
+				);
+				return result.match(
+					(res) =>
+						status(
+							200,
+							res.map((stock) => ({
+								...stock,
+								price: Number.parseFloat(stock.price),
+								createdAt: stock.createdAt.toISOString(),
+								updatedAt: stock.updatedAt.toISOString(),
+							})),
+						),
+					(_err) =>
+						status(
+							500,
+							"Failed to fetch stocks" satisfies models.failedToFetchStocks,
+						),
+				);
+			},
+			{
+				params: z.object({
+					productId: z.uuidv4(),
+				}),
+				response: {
+					200: models.stockListResponse,
+					500: models.failedToFetchStocks,
+				},
+			},
+		);
+}
+
 function updateStockRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
@@ -243,6 +284,7 @@ export function createStocksModule(database: DatabasePlugin) {
 		.use(createStockRoute(database))
 		.use(getStockByIdRoute(database))
 		.use(getStocksRoute(database))
+		.use(getStocksByProductIdRoute(database))
 		.use(updateStockRoute(database))
 		.use(deleteStockRoute(database));
 }

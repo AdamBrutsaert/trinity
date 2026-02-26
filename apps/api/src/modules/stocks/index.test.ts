@@ -525,4 +525,152 @@ describe("Stocks module", () => {
 			expect(deleteResponse.status).toBe(422);
 		});
 	});
+
+	describe("GET /products/:productId", () => {
+		it("should return 401 for unauthenticated requests", async () => {
+			const productId = await createTestProduct(connection);
+			const response = await api.stocks.products({ productId }).get();
+			expect(response.status).toBe(401);
+		});
+
+		it("should return empty array for product with no stocks", async () => {
+			const customerToken = await createCustomerUser(connection);
+			const productId = await createTestProduct(connection);
+
+			const response = await api.stocks
+				.products({ productId })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+
+			expect(response.status).toBe(200);
+			expect(response.data).toEqual([]);
+		});
+
+		it("should allow customers to fetch stocks for a product", async () => {
+			const adminToken = await createAdminUser(connection);
+			const customerToken = await createCustomerUser(connection);
+			const productId = await createTestProduct(connection);
+
+			const stock1 = await api.stocks.post(
+				{
+					productId,
+					price: 9.99,
+					quantity: 100,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(stock1.status).toBe(201);
+
+			const stock2 = await api.stocks.post(
+				{
+					productId,
+					price: 12.99,
+					quantity: 50,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(stock2.status).toBe(201);
+
+			const response = await api.stocks
+				.products({ productId })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+
+			expect(response.status).toBe(200);
+			expect(response.data).toHaveLength(2);
+			expect(response.data?.[0]).toHaveProperty("productId", productId);
+			expect(response.data?.[1]).toHaveProperty("productId", productId);
+		});
+
+		it("should only return stocks for the specified product", async () => {
+			const adminToken = await createAdminUser(connection);
+			const customerToken = await createCustomerUser(connection);
+
+			const brand = await createBrand(connection, "Test Brand");
+			const category = await createCategory(connection, "Test Category");
+
+			const brandId = brand._unsafeUnwrap().id;
+			const categoryId = category._unsafeUnwrap().id;
+
+			const product1 = await createProduct(connection, {
+				barcode: "1234567890",
+				name: "Product 1",
+				description: "Description 1",
+				imageUrl: "https://example.com/image1.jpg",
+				brandId,
+				categoryId,
+				energyKcal: 100,
+				fat: 10,
+				carbs: 20,
+				protein: 5,
+				salt: 0.5,
+			});
+			const productId1 = product1._unsafeUnwrap().id;
+
+			const product2 = await createProduct(connection, {
+				barcode: "0987654321",
+				name: "Product 2",
+				description: "Description 2",
+				imageUrl: "https://example.com/image2.jpg",
+				brandId,
+				categoryId,
+				energyKcal: 200,
+				fat: 15,
+				carbs: 25,
+				protein: 8,
+				salt: 1,
+			});
+			const productId2 = product2._unsafeUnwrap().id;
+
+			await api.stocks.post(
+				{
+					productId: productId1,
+					price: 9.99,
+					quantity: 100,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+
+			await api.stocks.post(
+				{
+					productId: productId2,
+					price: 14.99,
+					quantity: 75,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+
+			await api.stocks.post(
+				{
+					productId: productId2,
+					price: 13.99,
+					quantity: 50,
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+
+			const response1 = await api.stocks
+				.products({ productId: productId1 })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+
+			expect(response1.status).toBe(200);
+			expect(response1.data).toHaveLength(1);
+			expect(response1.data?.[0]).toHaveProperty("productId", productId1);
+
+			const response2 = await api.stocks
+				.products({ productId: productId2 })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+
+			expect(response2.status).toBe(200);
+			expect(response2.data).toHaveLength(2);
+			expect(response2.data?.[0]).toHaveProperty("productId", productId2);
+			expect(response2.data?.[1]).toHaveProperty("productId", productId2);
+		});
+
+		it("should return 422 for invalid product ID", async () => {
+			const customerToken = await createCustomerUser(connection);
+			const response = await api.stocks
+				.products({ productId: "invalid-uuid" })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+			expect(response.status).toBe(422);
+		});
+	});
 });

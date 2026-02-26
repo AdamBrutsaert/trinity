@@ -126,6 +126,32 @@ export function getStocks(tx: Database) {
 	);
 }
 
+export type GetStocksByProductIdError = {
+	type: "failed_to_fetch_stocks";
+};
+
+export function getStocksByProductId(tx: Database, productId: string) {
+	return ResultAsync.fromPromise(
+		tx.query.stocksTable.findMany({
+			where: (table, { eq }) => eq(table.productId, productId),
+			columns: {
+				id: true,
+				productId: true,
+				price: true,
+				quantity: true,
+				createdAt: true,
+				updatedAt: true,
+			},
+		}),
+		(err) =>
+			errorMapper<GetStocksByProductIdError>(err, {
+				default: () => ({
+					type: "failed_to_fetch_stocks",
+				}),
+			}),
+	);
+}
+
 export type UpdateStockError =
 	| {
 			type: "stock_not_found";
