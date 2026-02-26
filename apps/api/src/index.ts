@@ -19,7 +19,7 @@ const databasePlugin = createDatabasePlugin(
 	createDatabaseConnection(env.DATABASE_URL),
 );
 
-const app = new Elysia()
+export default new Elysia()
 	.use(
 		cors({
 			origin: true,
@@ -45,12 +45,4 @@ const app = new Elysia()
 	.use(createBrandsModule(databasePlugin))
 	.use(createCategoriesModule(databasePlugin))
 	.use(createProductsModule(databasePlugin))
-	.use(createStocksModule(databasePlugin))
-	.listen({
-		port: 3000,
-		hostname: "0.0.0.0",
-	});
-
-console.log(
-	`🦊 Elysia is running at ${app.server?.hostname}:${app.server?.port}`,
-);
+	.use(createStocksModule(databasePlugin));

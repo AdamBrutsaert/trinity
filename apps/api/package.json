@@ -1,5 +1,6 @@
 {
 	"name": "@trinity/api",
+	"type": "module",
 	"private": true,
 	"scripts": {
 		"dev": "bun run --watch src/index.ts",
