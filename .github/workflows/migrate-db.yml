@@ -29,5 +29,5 @@ jobs:
         working-directory: apps/api
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JWT_SECRET: dummy_secret_that_is_50_characters_long_to_satisfy_requirements
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
         run: bunx drizzle-kit migrate
