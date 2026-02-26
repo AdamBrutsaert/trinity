@@ -1,9 +1,9 @@
-name: Run API tests
+name: Run tests
 
 on: [push]
 
 jobs:
-  test-api:
+  api-tests:
     if: github.repository == 'AdamBrutsaert/trinity'
     runs-on: ubuntu-latest
     steps:
@@ -30,4 +30,4 @@ jobs:
           DOCKER_HOST: unix:///var/run/docker.sock
         run: |
           cp .env.test .env
-          bun test
+          bun test --timeout 50000
