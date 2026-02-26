@@ -1,0 +1,79 @@
+name: Test, Migrate & Deploy
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  test:
+    if: github.repository == 'AdamBrutsaert/trinity'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: apps/api
+        run: bun install
+
+      - name: Pull required images
+        run: |
+          docker pull postgres@sha256:c2820d612da95f7e03f07785878a4de220a53aaaeea351f0f2fa0a4a72ec4e50
+
+      - name: Run tests
+        working-directory: apps/api
+        env:
+          TESTCONTAINERS_RYUK_DISABLED: "true"
+          DOCKER_HOST: unix:///var/run/docker.sock
+        run: |
+          cp .env.test .env
+          bun test --timeout 50000
+
+  migrate:
+    needs: test
+    if: github.repository == 'AdamBrutsaert/trinity'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        working-directory: apps/api
+        run: bun install
+
+      - name: Run migrations
+        working-directory: apps/api
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+        run: bunx drizzle-kit migrate
+
+  deploy:
+    needs: migrate
+    if: github.repository == 'AdamBrutsaert/trinity'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Deploy project to Vercel
+        run: bunx vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_TEAM_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
