@@ -9,5 +9,10 @@
 # TypeScript
 **/node_modules/
 
+# Vercel
+**/.vercel
+
 # Python
 **/.venv/
+.vercel
+.env*.local

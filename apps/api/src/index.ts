@@ -41,7 +41,7 @@ export default new Elysia()
 			},
 		}),
 	)
-	.use(createHealthModule())
+	.use(createHealthModule(databasePlugin))
 	.use(createAuthModule(databasePlugin))
 	.use(createUsersModule(databasePlugin))
 	.use(createBrandsModule(databasePlugin))
