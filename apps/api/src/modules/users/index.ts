@@ -1,10 +1,9 @@
 import Elysia, { status } from "elysia";
 import * as z from "zod";
 
-import { assertNever } from "@/errors";
-import { auth } from "@/modules/auth/macro";
-import type { DatabasePlugin } from "@/modules/database";
-
+import { assertNever } from "../../errors";
+import { auth } from "../auth/macro";
+import type { DatabasePlugin } from "../database";
 import * as models from "./model";
 import * as service from "./service";
 

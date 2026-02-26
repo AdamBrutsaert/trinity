@@ -19,13 +19,12 @@ import { treaty } from "@elysiajs/eden";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { migrate } from "drizzle-orm/bun-sql/migrator";
 
-import { login } from "@/modules/auth/service";
+import { login } from "../auth/service";
 import {
 	createDatabaseConnection,
 	createDatabasePlugin,
 	type Database,
-} from "@/modules/database";
-
+} from "../database";
 import { createUsersModule } from ".";
 import { createUser } from "./service";
 

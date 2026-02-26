@@ -1,8 +1,7 @@
 import Elysia, { status } from "elysia";
 
-import { assertNever } from "@/errors";
-import type { DatabasePlugin } from "@/modules/database";
-
+import { assertNever } from "../../errors";
+import type { DatabasePlugin } from "../database";
 import * as models from "./model";
 import * as service from "./service";
 

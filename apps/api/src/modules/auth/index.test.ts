@@ -19,11 +19,7 @@ import { treaty } from "@elysiajs/eden";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { migrate } from "drizzle-orm/bun-sql/migrator";
 
-import {
-	createDatabaseConnection,
-	createDatabasePlugin,
-} from "@/modules/database";
-
+import { createDatabaseConnection, createDatabasePlugin } from "../database";
 import { createAuthModule } from ".";
 
 describe("Auth module", () => {

@@ -1,10 +1,12 @@
+import { SQL } from "bun";
+
 import { drizzle } from "drizzle-orm/bun-sql";
 import { Elysia } from "elysia";
 
 import * as schema from "./schema";
 
 export function createDatabaseConnection(url: string) {
-	return drizzle(url, { schema });
+	return drizzle(new SQL({ url, prepare: false }), { schema });
 }
 
 export type Transaction = Parameters<

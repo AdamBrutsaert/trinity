@@ -1,10 +1,9 @@
 import { eq } from "drizzle-orm";
 import { errAsync, okAsync, ResultAsync } from "neverthrow";
 
-import { errorMapper } from "@/errors";
-import type { Database } from "@/modules/database";
-import { productsTable } from "@/modules/database/schema";
-
+import { errorMapper } from "../../errors";
+import type { Database } from "../database";
+import { productsTable } from "../database/schema";
 import type * as models from "./models";
 
 export type CreateProductError =

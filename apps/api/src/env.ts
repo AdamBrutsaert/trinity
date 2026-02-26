@@ -6,6 +6,9 @@ export const env = createEnv({
 		DATABASE_URL: z.url(),
 		JWT_SECRET: z.string().min(32),
 	},
-	runtimeEnv: process.env,
+	runtimeEnv: {
+		DATABASE_URL: process.env.DATABASE_URL,
+		JWT_SECRET: process.env.JWT_SECRET,
+	},
 	emptyStringAsUndefined: true,
 });

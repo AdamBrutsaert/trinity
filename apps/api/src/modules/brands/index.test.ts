@@ -19,14 +19,13 @@ import { treaty } from "@elysiajs/eden";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { migrate } from "drizzle-orm/bun-sql/migrator";
 
-import { login } from "@/modules/auth/service";
+import { login } from "../auth/service";
 import {
 	createDatabaseConnection,
 	createDatabasePlugin,
 	type Database,
-} from "@/modules/database";
-import { createUser } from "@/modules/users/service";
-
+} from "../database";
+import { createUser } from "../users/service";
 import { createBrandsModule } from ".";
 
 async function createAdminUser(tx: Database) {

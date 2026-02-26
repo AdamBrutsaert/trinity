@@ -19,16 +19,15 @@ import { treaty } from "@elysiajs/eden";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { migrate } from "drizzle-orm/bun-sql/migrator";
 
-import { login } from "@/modules/auth/service";
-import { createBrand } from "@/modules/brands/service";
-import { createCategory } from "@/modules/categories/service";
+import { login } from "../auth/service";
+import { createBrand } from "../brands/service";
+import { createCategory } from "../categories/service";
 import {
 	createDatabaseConnection,
 	createDatabasePlugin,
 	type Database,
-} from "@/modules/database";
-import { createUser } from "@/modules/users/service";
-
+} from "../database";
+import { createUser } from "../users/service";
 import { createProductsModule } from ".";
 
 async function createAdminUser(tx: Database) {

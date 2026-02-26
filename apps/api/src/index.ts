@@ -3,24 +3,24 @@ import { openapi } from "@elysiajs/openapi";
 import { Elysia } from "elysia";
 import * as z from "zod";
 
-import { env } from "@/env";
-import { createAuthModule } from "@/modules/auth";
-import { createBrandsModule } from "@/modules/brands";
-import { createCategoriesModule } from "@/modules/categories";
+import { env } from "./env";
+import { createAuthModule } from "./modules/auth";
+import { createBrandsModule } from "./modules/brands";
+import { createCategoriesModule } from "./modules/categories";
 import {
 	createDatabaseConnection,
 	createDatabasePlugin,
-} from "@/modules/database";
-import { createHealthModule } from "@/modules/health";
-import { createProductsModule } from "@/modules/products";
-import { createStocksModule } from "@/modules/stocks";
-import { createUsersModule } from "@/modules/users";
+} from "./modules/database";
+import { createHealthModule } from "./modules/health";
+import { createProductsModule } from "./modules/products";
+import { createStocksModule } from "./modules/stocks";
+import { createUsersModule } from "./modules/users";
 
 const databasePlugin = createDatabasePlugin(
 	createDatabaseConnection(env.DATABASE_URL),
 );
 
-export default new Elysia()
+const app = new Elysia()
 	.use(
 		cors({
 			origin: true,
@@ -41,6 +41,7 @@ export default new Elysia()
 			},
 		}),
 	)
+	.use(databasePlugin)
 	.use(createHealthModule(databasePlugin))
 	.use(createAuthModule(databasePlugin))
 	.use(createUsersModule(databasePlugin))
@@ -48,3 +49,5 @@ export default new Elysia()
 	.use(createCategoriesModule(databasePlugin))
 	.use(createProductsModule(databasePlugin))
 	.use(createStocksModule(databasePlugin));
+
+export default app;

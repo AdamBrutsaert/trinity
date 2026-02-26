@@ -2,11 +2,10 @@ import bcrypt from "bcryptjs";
 import { jwtVerify, SignJWT } from "jose";
 import { errAsync, okAsync, ResultAsync } from "neverthrow";
 
-import { env } from "@/env";
-import { errorMapper } from "@/errors";
-import type { Database } from "@/modules/database";
-import { createUser } from "@/modules/users/service";
-
+import { env } from "../../env";
+import { errorMapper } from "../../errors";
+import type { Database } from "../database";
+import { createUser } from "../users/service";
 import type * as models from "./model";
 
 function generateToken(userId: string, role: "customer" | "admin") {
@@ -15,7 +14,7 @@ function generateToken(userId: string, role: "customer" | "admin") {
 		.setIssuedAt()
 		.setExpirationTime("2h")
 		.setIssuer("trinity")
-		.sign(new TextEncoder().encode(env.JWT_SECRET));
+		.sign(new TextEncoder().encode(env.JWT_SECRET || ""));
 }
 
 export function register(tx: Database, params: models.registerBody) {
@@ -69,7 +68,7 @@ export function verifyToken(token: string) {
 	return ResultAsync.fromPromise(
 		jwtVerify<{ userId: string; role: "customer" | "admin" }>(
 			token,
-			new TextEncoder().encode(env.JWT_SECRET),
+			new TextEncoder().encode(env.JWT_SECRET || ""),
 			{
 				issuer: "trinity",
 			},

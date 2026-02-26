@@ -2,10 +2,9 @@ import bcrypt from "bcryptjs";
 import { eq } from "drizzle-orm";
 import { errAsync, okAsync, ResultAsync } from "neverthrow";
 
-import { errorMapper } from "@/errors";
-import type { Database } from "@/modules/database";
-import { usersTable } from "@/modules/database/schema";
-
+import { errorMapper } from "../../errors";
+import type { Database } from "../database";
+import { usersTable } from "../database/schema";
 import type * as models from "./model";
 
 export type CreateUserError =

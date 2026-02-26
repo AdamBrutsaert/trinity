@@ -1,7 +1,7 @@
 import Elysia from "elysia";
 import z from "zod";
 
-import type { DatabasePlugin } from "@/modules/database";
+import type { DatabasePlugin } from "../database";
 
 function helloWorldRoute() {
 	return new Elysia().get("/", "Hello, world!");
