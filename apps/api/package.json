@@ -6,6 +6,12 @@
 		"dev": "bun run --watch src/index.ts",
 		"start": "bun run src/index.ts"
 	},
+	"exports": {
+		"./db": "./src/modules/database/index.ts",
+		"./db/schema": "./src/modules/database/schema.ts",
+		"./users": "./src/modules/users/service.ts",
+		"./auth": "./src/modules/auth/service.ts"
+	},
 	"dependencies": {
 		"@elysiajs/cors": "^1.4.1",
 		"@elysiajs/openapi": "^1.4.14",

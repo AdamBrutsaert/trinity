@@ -1,0 +1,17 @@
+{
+  "name": "@trinity/seed",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "seed": "bun run index.ts"
+  },
+  "dependencies": {
+    "@trinity/api": "workspace:*",
+    "drizzle-orm": "^0.45.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5"
+  }
+}

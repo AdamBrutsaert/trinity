@@ -11,8 +11,3 @@
 
 # Vercel
 **/.vercel
-
-# Python
-**/.venv/
-.vercel
-.env*.local

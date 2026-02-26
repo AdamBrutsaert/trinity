@@ -22,3 +22,5 @@ export function createDatabasePlugin(database: Database) {
 }
 
 export type DatabasePlugin = ReturnType<typeof createDatabasePlugin>;
+
+export * from "./schema";
