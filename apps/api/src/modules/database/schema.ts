@@ -91,3 +91,22 @@ export const stocksTable = pgTable("stocks", (t) => ({
 	createdAt: t.timestamp("created_at").defaultNow().notNull(),
 	updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
 }));
+
+export const cartItemsTable = pgTable(
+	"cart_items",
+	(t) => ({
+		id: t.uuid("id").defaultRandom().primaryKey(),
+		userId: t
+			.uuid("user_id")
+			.references(() => usersTable.id, { onDelete: "cascade" })
+			.notNull(),
+		productId: t
+			.uuid("product_id")
+			.references(() => productsTable.id, { onDelete: "cascade" })
+			.notNull(),
+		quantity: t.integer("quantity").notNull(),
+		createdAt: t.timestamp("created_at").defaultNow().notNull(),
+		updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
+	}),
+	(t) => [uniqueIndex("idx_unique_user_product").on(t.userId, t.productId)],
+);

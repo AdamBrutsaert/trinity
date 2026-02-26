@@ -4,7 +4,11 @@ import z from "zod";
 import type { DatabasePlugin } from "../database";
 
 function helloWorldRoute() {
-	return new Elysia().get("/", "Hello, world!");
+	return new Elysia().get("/", "Welcome to Trinity API", {
+		response: {
+			200: z.literal("Welcome to Trinity API"),
+		},
+	});
 }
 
 function healthCheckRoute(database: DatabasePlugin) {
