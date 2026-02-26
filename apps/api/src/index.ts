@@ -11,6 +11,7 @@ import {
 	createDatabaseConnection,
 	createDatabasePlugin,
 } from "@/modules/database";
+import { createHealthModule } from "@/modules/health";
 import { createProductsModule } from "@/modules/products";
 import { createStocksModule } from "@/modules/stocks";
 import { createUsersModule } from "@/modules/users";
@@ -40,6 +41,7 @@ export default new Elysia()
 			},
 		}),
 	)
+	.use(createHealthModule())
 	.use(createAuthModule(databasePlugin))
 	.use(createUsersModule(databasePlugin))
 	.use(createBrandsModule(databasePlugin))
