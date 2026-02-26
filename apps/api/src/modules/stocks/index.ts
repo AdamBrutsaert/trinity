@@ -2,7 +2,7 @@ import Elysia, { status } from "elysia";
 import z from "zod";
 
 import { assertNever } from "../../errors";
-import { auth } from "../auth/macro";
+import { authGuard } from "../auth/middleware";
 import type { DatabasePlugin } from "../database";
 import * as models from "./models";
 import * as service from "./service";
@@ -10,7 +10,7 @@ import * as service from "./service";
 function createStockRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.post(
 			"/",
 			async ({ body, database }) => {
@@ -44,7 +44,6 @@ function createStockRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				body: models.createStockBody,
 				response: {
 					201: models.stockResponse,
@@ -58,7 +57,7 @@ function createStockRoute(database: DatabasePlugin) {
 function getStockByIdRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.get(
 			"/:id",
 			async ({ params, database }) => {
@@ -92,7 +91,6 @@ function getStockByIdRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -108,7 +106,7 @@ function getStockByIdRoute(database: DatabasePlugin) {
 function getStocksRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.get(
 			"/",
 			async ({ database }) => {
@@ -134,7 +132,6 @@ function getStocksRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				response: {
 					200: models.stockListResponse,
 					500: models.failedToFetchStocks,
@@ -146,7 +143,7 @@ function getStocksRoute(database: DatabasePlugin) {
 function updateStockRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.put(
 			"/:id",
 			async ({ params, body, database }) => {
@@ -185,7 +182,6 @@ function updateStockRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -202,7 +198,7 @@ function updateStockRoute(database: DatabasePlugin) {
 function deleteStockRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.delete(
 			"/:id",
 			async ({ params, database }) => {
@@ -230,7 +226,6 @@ function deleteStockRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),

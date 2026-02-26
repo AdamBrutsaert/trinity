@@ -2,7 +2,7 @@ import Elysia, { status } from "elysia";
 import z from "zod";
 
 import { assertNever } from "../../errors";
-import { auth } from "../auth/macro";
+import { authGuard } from "../auth/middleware";
 import type { DatabasePlugin } from "../database";
 import * as models from "./models";
 import * as service from "./service";
@@ -10,7 +10,7 @@ import * as service from "./service";
 function createProductRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.post(
 			"/",
 			async ({ body, database }) => {
@@ -53,7 +53,6 @@ function createProductRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				body: models.createProductBody,
 				response: {
 					201: models.productResponse,
@@ -68,7 +67,7 @@ function createProductRoute(database: DatabasePlugin) {
 function getProductByIdRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.get(
 			"/:id",
 			async ({ params, database }) => {
@@ -101,7 +100,6 @@ function getProductByIdRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -117,7 +115,7 @@ function getProductByIdRoute(database: DatabasePlugin) {
 function getProductByBarcodeRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.get(
 			"/barcode/:barcode",
 			async ({ params, database }) => {
@@ -150,7 +148,6 @@ function getProductByBarcodeRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				params: z.object({
 					barcode: z.string().min(1).max(50),
 				}),
@@ -166,7 +163,7 @@ function getProductByBarcodeRoute(database: DatabasePlugin) {
 function getProductsRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.get(
 			"/",
 			async ({ database }) => {
@@ -191,7 +188,6 @@ function getProductsRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				response: {
 					200: models.productListResponse,
 					500: models.failedToFetchProducts,
@@ -203,7 +199,7 @@ function getProductsRoute(database: DatabasePlugin) {
 function updateProductRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.put(
 			"/:id",
 			async ({ params, body, database }) => {
@@ -251,7 +247,6 @@ function updateProductRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -273,7 +268,7 @@ function updateProductRoute(database: DatabasePlugin) {
 function deleteProductRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.delete(
 			"/:id",
 			async ({ params, database }) => {
@@ -301,7 +296,6 @@ function deleteProductRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),

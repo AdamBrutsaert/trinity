@@ -3,7 +3,7 @@ import z from "zod";
 
 import type { DatabasePlugin } from "../database";
 
-function helloWorldRoute() {
+function welcomeRoute() {
 	return new Elysia().get("/", "Welcome to Trinity API", {
 		response: {
 			200: z.literal("Welcome to Trinity API"),
@@ -45,6 +45,6 @@ function healthCheckRoute(database: DatabasePlugin) {
 
 export function createHealthModule(database: DatabasePlugin) {
 	return new Elysia({ name: "health", tags: ["health"] })
-		.use(helloWorldRoute())
+		.use(welcomeRoute())
 		.use(healthCheckRoute(database));
 }

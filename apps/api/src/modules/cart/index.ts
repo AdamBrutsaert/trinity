@@ -2,42 +2,18 @@ import Elysia, { status } from "elysia";
 import z from "zod";
 
 import { assertNever } from "../../errors";
-import { auth } from "../auth/macro";
-import * as authService from "../auth/service";
+import { authGuard } from "../auth/middleware";
 import type { DatabasePlugin } from "../database";
 import * as models from "./models";
 import * as service from "./service";
 
-async function extractUserId(authHeader: string | undefined) {
-	if (!authHeader) {
-		return null;
-	}
-
-	const [scheme, token] = authHeader.split(" ");
-	if (scheme !== "Bearer" || !token) {
-		return null;
-	}
-
-	const result = await authService.verifyToken(token);
-	if (result.isErr()) {
-		return null;
-	}
-
-	return result.value.payload.userId;
-}
-
 function addItemToCartRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.post(
 			"/items",
-			async ({ body, headers, database }) => {
-				const userId = await extractUserId(headers.authorization);
-				if (!userId) {
-					return status(401, "Unauthorized");
-				}
-
+			async ({ body, userId, database }) => {
 				const result = await database.transaction(async (tx) => {
 					return await service.addItemToCart(tx, userId, body);
 				});
@@ -68,7 +44,6 @@ function addItemToCartRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				body: models.addItemToCartBody,
 				response: {
 					201: models.cartItemResponse,
@@ -82,15 +57,10 @@ function addItemToCartRoute(database: DatabasePlugin) {
 function updateCartItemRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.put(
 			"/items/:productId",
-			async ({ params, body, headers, database }) => {
-				const userId = await extractUserId(headers.authorization);
-				if (!userId) {
-					return status(401, "Unauthorized");
-				}
-
+			async ({ params, body, userId, database }) => {
 				const result = await database.transaction(async (tx) => {
 					return await service.updateCartItem(
 						tx,
@@ -126,7 +96,6 @@ function updateCartItemRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				params: z.object({
 					productId: z.uuidv4(),
 				}),
@@ -143,15 +112,10 @@ function updateCartItemRoute(database: DatabasePlugin) {
 function removeCartItemRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.delete(
 			"/items/:productId",
-			async ({ params, headers, database }) => {
-				const userId = await extractUserId(headers.authorization);
-				if (!userId) {
-					return status(401, "Unauthorized");
-				}
-
+			async ({ params, userId, database }) => {
 				const result = await database.transaction(async (tx) => {
 					return await service.removeCartItem(tx, userId, params.productId);
 				});
@@ -177,7 +141,6 @@ function removeCartItemRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				params: z.object({
 					productId: z.uuidv4(),
 				}),
@@ -193,15 +156,10 @@ function removeCartItemRoute(database: DatabasePlugin) {
 function getCartItemsRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.get(
 			"/",
-			async ({ headers, database }) => {
-				const userId = await extractUserId(headers.authorization);
-				if (!userId) {
-					return status(401, "Unauthorized");
-				}
-
+			async ({ userId, database }) => {
 				const result = await database.transaction(async (tx) => {
 					return await service.getCartItems(tx, userId);
 				});
@@ -224,7 +182,6 @@ function getCartItemsRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				response: {
 					200: models.cartItemListResponse,
 					500: models.failedToFetchCart,
@@ -236,15 +193,10 @@ function getCartItemsRoute(database: DatabasePlugin) {
 function clearCartRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.delete(
 			"/",
-			async ({ headers, database }) => {
-				const userId = await extractUserId(headers.authorization);
-				if (!userId) {
-					return status(401, "Unauthorized");
-				}
-
+			async ({ userId, database }) => {
 				const result = await database.transaction(async (tx) => {
 					return await service.clearCart(tx, userId);
 				});
@@ -259,7 +211,6 @@ function clearCartRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				response: {
 					204: z.void(),
 					500: models.failedToClearCart,

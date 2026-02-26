@@ -2,7 +2,7 @@ import Elysia, { status } from "elysia";
 import z from "zod";
 
 import { assertNever } from "../../errors";
-import { auth } from "../auth/macro";
+import { authGuard } from "../auth/middleware";
 import type { DatabasePlugin } from "../database";
 import * as models from "./models";
 import * as service from "./service";
@@ -10,7 +10,7 @@ import * as service from "./service";
 function createBrandRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.post(
 			"/",
 			async ({ body, database }) => {
@@ -43,7 +43,6 @@ function createBrandRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				body: models.createBrandBody,
 				response: {
 					201: models.brandResponse,
@@ -57,7 +56,7 @@ function createBrandRoute(database: DatabasePlugin) {
 function getBrandByIdRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.get(
 			"/:id",
 			async ({ params, database }) => {
@@ -90,7 +89,6 @@ function getBrandByIdRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -106,7 +104,7 @@ function getBrandByIdRoute(database: DatabasePlugin) {
 function getBrandsRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("customer"))
 		.get(
 			"/",
 			async ({ database }) => {
@@ -131,7 +129,6 @@ function getBrandsRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				customer: true,
 				response: {
 					200: models.brandListResponse,
 					500: models.failedToFetchBrands,
@@ -143,7 +140,7 @@ function getBrandsRoute(database: DatabasePlugin) {
 function updateBrandRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.put(
 			"/:id",
 			async ({ params, body, database }) => {
@@ -181,7 +178,6 @@ function updateBrandRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
@@ -199,7 +195,7 @@ function updateBrandRoute(database: DatabasePlugin) {
 function deleteBrandRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
-		.use(auth)
+		.use(authGuard("admin"))
 		.delete(
 			"/:id",
 			async ({ params, database }) => {
@@ -227,7 +223,6 @@ function deleteBrandRoute(database: DatabasePlugin) {
 				);
 			},
 			{
-				admin: true,
 				params: z.object({
 					id: z.uuidv4(),
 				}),
