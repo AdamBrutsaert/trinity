@@ -1,0 +1,20 @@
+include:
+  - ../database/compose.yml
+  - ../migrations/compose.yml
+
+services:
+  api:
+    build:
+      context: ../..
+      dockerfile: docker/api/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      JWT_SECRET: ${JWT_SECRET}
+    depends_on:
+      database:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped

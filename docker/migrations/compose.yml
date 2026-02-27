@@ -1,0 +1,13 @@
+include:
+  - ../database/compose.yml
+
+services:
+  migrate:
+    build:
+      context: ../..
+      dockerfile: docker/migrations/Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: ${DATABASE_URL}

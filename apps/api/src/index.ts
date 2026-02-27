@@ -53,3 +53,11 @@ const app = new Elysia()
 	.use(createCartModule(databasePlugin));
 
 export default app;
+
+// Start the server only if the PORT environment variable is set and valid
+// This allows the app to be imported without starting the server, which is useful for testing
+// and deployment in environments where the server is started separately (e.g., serverless platforms)
+const portResult = z.coerce.number().safeParse(process.env.PORT);
+if (portResult.success) {
+	app.listen(portResult.data);
+}
