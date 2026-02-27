@@ -34,8 +34,19 @@ jobs:
           cp .env.test .env
           bun test --timeout 50000
 
-  migrate:
+  build:
     needs: test
+    if: github.repository == 'AdamBrutsaert/trinity'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build docker images
+        run: docker compose build
+
+  migrate:
+    needs: build
     if: github.repository == 'AdamBrutsaert/trinity'
     runs-on: ubuntu-latest
     steps:
@@ -55,8 +66,7 @@ jobs:
         working-directory: apps/api
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-        run: bunx drizzle-kit migrate
+        run: bun run migrate
 
   deploy:
     needs: migrate
