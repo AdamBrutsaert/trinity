@@ -32,7 +32,7 @@ jobs:
           DOCKER_HOST: unix:///var/run/docker.sock
         run: |
           cp .env.test .env
-          bun test --timeout 50000
+          bun test --timeout 50000 --coverage
 
   build:
     needs: test
