@@ -34,3 +34,10 @@ export const invalidResponseStructure = z.literal(
 	"Invalid response structure from PayPal",
 );
 export type invalidResponseStructure = z.infer<typeof invalidResponseStructure>;
+
+export const failedToCalculateCartTotal = z.literal(
+	"Failed to calculate cart total",
+);
+export type failedToCalculateCartTotal = z.infer<
+	typeof failedToCalculateCartTotal
+>;

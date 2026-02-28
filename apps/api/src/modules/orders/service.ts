@@ -1,6 +1,8 @@
 import { errAsync, okAsync, ResultAsync } from "neverthrow";
 
 import { env } from "../../env";
+import { getCartTotalPrice } from "../cart/service";
+import type { Database } from "../database";
 import { createPaypalOrderSchema, getPaypalAccessTokenSchema } from "./models";
 
 type GetAccessTokenError =
@@ -55,7 +57,7 @@ function getPaypalAccessToken() {
 
 export type CreatePaypalOrderError = GetAccessTokenError;
 
-export function createPaypalOrder(amount: string, currency: string) {
+function createPaypalOrder(amount: string, currency: string) {
 	return getPaypalAccessToken().andThen((accessToken) => {
 		return ResultAsync.fromPromise(
 			fetch(`${env.PAYPAL_BASE_URL}/v2/checkout/orders`, {
@@ -99,5 +101,12 @@ export function createPaypalOrder(amount: string, currency: string) {
 				}
 				return okAsync(parsed.data);
 			});
+	});
+}
+
+export function createCartPaypalOrder(tx: Database, userId: string) {
+	return getCartTotalPrice(tx, userId).andThen((total) => {
+		const totalString = total.toFixed(2);
+		return createPaypalOrder(totalString, "EUR");
 	});
 }
