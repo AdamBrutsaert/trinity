@@ -219,11 +219,41 @@ function clearCartRoute(database: DatabasePlugin) {
 		);
 }
 
+function getCartTotalPriceRoute(database: DatabasePlugin) {
+	return new Elysia()
+		.use(database)
+		.use(authGuard("customer"))
+		.get(
+			"/total",
+			async ({ userId, database }) => {
+				const result = await database.transaction(async (tx) => {
+					return await service.getCartTotalPrice(tx, userId);
+				});
+
+				return result.match(
+					(total) => status(200, { total }),
+					(_err) =>
+						status(
+							500,
+							"Failed to calculate cart total" satisfies models.failedToCalculateCartTotal,
+						),
+				);
+			},
+			{
+				response: {
+					200: models.cartTotalPriceResponse,
+					500: models.failedToCalculateCartTotal,
+				},
+			},
+		);
+}
+
 export function createCartModule(database: DatabasePlugin) {
 	return new Elysia({ name: "cart", prefix: "/cart", tags: ["cart"] })
 		.use(addItemToCartRoute(database))
 		.use(updateCartItemRoute(database))
 		.use(removeCartItemRoute(database))
 		.use(getCartItemsRoute(database))
-		.use(clearCartRoute(database));
+		.use(clearCartRoute(database))
+		.use(getCartTotalPriceRoute(database));
 }

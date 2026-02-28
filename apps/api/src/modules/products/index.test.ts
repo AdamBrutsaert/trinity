@@ -1,4 +1,3 @@
-import { SQL } from "bun";
 import {
 	afterAll,
 	afterEach,
@@ -8,6 +7,7 @@ import {
 	expect,
 	it,
 } from "bun:test";
+import { SQL } from "bun";
 
 import {
 	PostgreSqlContainer,
@@ -19,7 +19,6 @@ import { treaty } from "@elysiajs/eden";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { migrate } from "drizzle-orm/bun-sql/migrator";
 
-import { createProductsModule } from ".";
 import { login } from "../auth/service";
 import { createBrand } from "../brands/service";
 import { createCategory } from "../categories/service";
@@ -29,6 +28,7 @@ import {
 	type Database,
 } from "../database";
 import { createUser } from "../users/service";
+import { createProductsModule } from ".";
 
 async function createAdminUser(tx: Database) {
 	await createUser(tx, {

@@ -44,3 +44,15 @@ export type failedToFetchCart = z.infer<typeof failedToFetchCart>;
 
 export const failedToClearCart = z.literal("Failed to clear cart");
 export type failedToClearCart = z.infer<typeof failedToClearCart>;
+
+export const cartTotalPriceResponse = z.object({
+	total: z.number(),
+});
+export type cartTotalPriceResponse = z.infer<typeof cartTotalPriceResponse>;
+
+export const failedToCalculateCartTotal = z.literal(
+	"Failed to calculate cart total",
+);
+export type failedToCalculateCartTotal = z.infer<
+	typeof failedToCalculateCartTotal
+>;
