@@ -590,7 +590,7 @@ describe("Users module", () => {
 		});
 
 		it("should return 409 when updating email to an existing one", async () => {
-			const adminToken = await createAdminUser(connection);
+			await createAdminUser(connection);
 			const customerToken = await createCustomerUser(connection);
 
 			const response = await api.users.me.post(
