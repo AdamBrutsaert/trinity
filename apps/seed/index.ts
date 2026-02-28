@@ -135,11 +135,14 @@ async function upsertProduct(
 	brandId: string,
 	categoryId: string,
 ): Promise<void> {
+	const price = Math.random() * 10 + 0.99;
+
 	await db
 		.insert(productsTable)
 		.values({
 			barcode: product.barcode,
 			name: product.name,
+			price: price.toFixed(2),
 			imageUrl: product.imageUrl,
 			brandId,
 			categoryId,

@@ -65,7 +65,7 @@ async function createSecondCustomerUser(tx: Database) {
 	)._unsafeUnwrap().token;
 }
 
-async function createTestProduct(tx: Database) {
+async function createTestProduct(tx: Database, price = 9.99) {
 	const brand = (await createBrand(tx, "Test Brand"))._unsafeUnwrap();
 	const category = (await createCategory(tx, "Test Category"))._unsafeUnwrap();
 
@@ -77,11 +77,38 @@ async function createTestProduct(tx: Database) {
 			imageUrl: "https://example.com/image.jpg",
 			brandId: brand.id,
 			categoryId: category.id,
+			price,
 			energyKcal: 100,
 			fat: 10,
 			carbs: 20,
 			protein: 5,
 			salt: 1,
+		})
+	)._unsafeUnwrap();
+
+	return product;
+}
+
+async function createSecondTestProduct(tx: Database, price = 19.99) {
+	const brand = (await createBrand(tx, "Test Brand 2"))._unsafeUnwrap();
+	const category = (
+		await createCategory(tx, "Test Category 2")
+	)._unsafeUnwrap();
+
+	const product = (
+		await createProduct(tx, {
+			barcode: "9876543210123",
+			name: "Test Product 2",
+			description: "Test Description 2",
+			imageUrl: "https://example.com/image2.jpg",
+			brandId: brand.id,
+			categoryId: category.id,
+			price,
+			energyKcal: 200,
+			fat: 15,
+			carbs: 30,
+			protein: 10,
+			salt: 2,
 		})
 	)._unsafeUnwrap();
 
@@ -527,6 +554,142 @@ describe("Cart module", () => {
 			});
 			expect(response2.status).toBe(200);
 			expect(response2.data).toHaveLength(1);
+		});
+	});
+
+	describe("GET /total", () => {
+		it("should return 401 for unauthenticated requests", async () => {
+			const response = await api.cart.total.get();
+			expect(response.status).toBe(401);
+		});
+
+		it("should return 0 for empty cart", async () => {
+			const customerToken = await createCustomerUser(connection);
+
+			const response = await api.cart.total.get({
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
+
+			expect(response.status).toBe(200);
+			expect(response.data).toHaveProperty("total", 0);
+		});
+
+		it("should calculate total for single item", async () => {
+			const customerToken = await createCustomerUser(connection);
+			const product = await createTestProduct(connection, 10.5);
+
+			await api.cart.items.post(
+				{
+					productId: product.id,
+					quantity: 3,
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			const response = await api.cart.total.get({
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
+
+			expect(response.status).toBe(200);
+			expect(response.data).toHaveProperty("total", 31.5);
+		});
+
+		it("should calculate total for multiple items", async () => {
+			const customerToken = await createCustomerUser(connection);
+			const product1 = await createTestProduct(connection, 10.99);
+			const product2 = await createSecondTestProduct(connection, 25.5);
+
+			await api.cart.items.post(
+				{
+					productId: product1.id,
+					quantity: 2,
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			await api.cart.items.post(
+				{
+					productId: product2.id,
+					quantity: 3,
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			const response = await api.cart.total.get({
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
+
+			expect(response.status).toBe(200);
+			// 2 * 10.99 + 3 * 25.5 = 21.98 + 76.5 = 98.48
+			expect(response.data).toHaveProperty("total", 98.48);
+		});
+
+		it("should only calculate total for current user's cart", async () => {
+			const customer1Token = await createCustomerUser(connection);
+			const customer2Token = await createSecondCustomerUser(connection);
+			const product1 = await createTestProduct(connection, 15.0);
+			const product2 = await createSecondTestProduct(connection, 20.0);
+
+			await api.cart.items.post(
+				{
+					productId: product1.id,
+					quantity: 2,
+				},
+				{ headers: { Authorization: `Bearer ${customer1Token}` } },
+			);
+
+			await api.cart.items.post(
+				{
+					productId: product2.id,
+					quantity: 5,
+				},
+				{ headers: { Authorization: `Bearer ${customer2Token}` } },
+			);
+
+			const response1 = await api.cart.total.get({
+				headers: { Authorization: `Bearer ${customer1Token}` },
+			});
+			expect(response1.status).toBe(200);
+			expect(response1.data).toHaveProperty("total", 30.0);
+
+			const response2 = await api.cart.total.get({
+				headers: { Authorization: `Bearer ${customer2Token}` },
+			});
+			expect(response2.status).toBe(200);
+			expect(response2.data).toHaveProperty("total", 100.0);
+		});
+
+		it("should update total when cart items change", async () => {
+			const customerToken = await createCustomerUser(connection);
+			const product = await createTestProduct(connection, 12.5);
+
+			await api.cart.items.post(
+				{
+					productId: product.id,
+					quantity: 2,
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			const response1 = await api.cart.total.get({
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
+			expect(response1.status).toBe(200);
+			expect(response1.data).toHaveProperty("total", 25.0);
+
+			// Update quantity
+			await api.cart
+				.items({ productId: product.id })
+				.put(
+					{ quantity: 5 },
+					{ headers: { Authorization: `Bearer ${customerToken}` } },
+				);
+
+			const response2 = await api.cart.total.get({
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
+			expect(response2.status).toBe(200);
+			expect(response2.data).toHaveProperty("total", 62.5);
 		});
 	});
 });

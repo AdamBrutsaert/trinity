@@ -3,7 +3,7 @@ import { errAsync, okAsync, ResultAsync } from "neverthrow";
 
 import { errorMapper } from "../../errors";
 import type { Database } from "../database";
-import { cartItemsTable } from "../database/schema";
+import { cartItemsTable, productsTable } from "../database/schema";
 import type * as models from "./models";
 
 export type AddItemToCartError =
@@ -211,4 +211,33 @@ export function clearCart(tx: Database, userId: string) {
 				}),
 			}),
 	).map(() => undefined);
+}
+
+export type GetCartTotalPriceError = {
+	type: "failed_to_calculate_cart_total";
+};
+
+export function getCartTotalPrice(tx: Database, userId: string) {
+	return ResultAsync.fromPromise(
+		tx
+			.select({
+				quantity: cartItemsTable.quantity,
+				price: productsTable.price,
+			})
+			.from(cartItemsTable)
+			.innerJoin(productsTable, eq(cartItemsTable.productId, productsTable.id))
+			.where(eq(cartItemsTable.userId, userId)),
+		(err) =>
+			errorMapper<GetCartTotalPriceError>(err, {
+				default: () => ({
+					type: "failed_to_calculate_cart_total",
+				}),
+			}),
+	).map((items) => {
+		const total = items.reduce((sum, item) => {
+			const price = Number.parseFloat(item.price);
+			return sum + item.quantity * price;
+		}, 0);
+		return total;
+	});
 }
