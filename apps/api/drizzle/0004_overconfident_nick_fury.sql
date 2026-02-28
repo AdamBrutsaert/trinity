@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX "idx_unique_product_id" ON "stocks" USING btree ("product_id");
