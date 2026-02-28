@@ -67,3 +67,16 @@ export type failedToUpdateUser = z.infer<typeof failedToUpdateUser>;
 
 export const failedToDeleteUser = z.literal("Failed to delete user");
 export type failedToDeleteUser = z.infer<typeof failedToDeleteUser>;
+
+export const updateMeBody = z.object({
+	email: z.email().max(255),
+	password: z.string().min(8).max(255),
+	firstName: z.string().max(100),
+	lastName: z.string().max(100),
+	phoneNumber: z.string().max(30).nullable(),
+	address: z.string().nullable(),
+	zipCode: z.string().max(20).nullable(),
+	city: z.string().max(100).nullable(),
+	country: z.string().max(100).nullable(),
+});
+export type updateMeBody = z.infer<typeof updateMeBody>;

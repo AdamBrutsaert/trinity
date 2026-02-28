@@ -236,11 +236,64 @@ function deleteUserRoute(database: DatabasePlugin) {
 		);
 }
 
+function updateMeRoute(database: DatabasePlugin) {
+	return new Elysia()
+		.use(database)
+		.use(authGuard("customer"))
+		.post(
+			"/me",
+			async ({ userId, body, database }) => {
+				const result = await database.transaction(async (tx) => {
+					return await service.updateCurrentUser(tx, userId, body);
+				});
+				return result.match(
+					(res) =>
+						status(200, {
+							...res,
+							createdAt: res.createdAt.toISOString(),
+							updatedAt: res.updatedAt.toISOString(),
+						}),
+					(err) => {
+						switch (err.type) {
+							case "user_not_found":
+								return status(
+									404,
+									"User not found" satisfies models.userNotFound,
+								);
+							case "email_already_exists":
+								return status(
+									409,
+									"Email already exists" satisfies models.emailAlreadyExists,
+								);
+							case "failed_to_update_user":
+								return status(
+									500,
+									"Failed to update user" satisfies models.failedToUpdateUser,
+								);
+							default:
+								assertNever(err);
+						}
+					},
+				);
+			},
+			{
+				body: models.updateMeBody,
+				response: {
+					200: models.userResponse,
+					404: models.userNotFound,
+					409: models.emailAlreadyExists,
+					500: models.failedToUpdateUser,
+				},
+			},
+		);
+}
+
 export function createUsersModule(database: DatabasePlugin) {
 	return new Elysia({ name: "users", prefix: "/users", tags: ["users"] })
 		.use(createUserRoute(database))
 		.use(getUserByIdRoute(database))
 		.use(getUsersRoute(database))
 		.use(updateUserRoute(database))
-		.use(deleteUserRoute(database));
+		.use(deleteUserRoute(database))
+		.use(updateMeRoute(database));
 }

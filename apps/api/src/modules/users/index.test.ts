@@ -494,4 +494,223 @@ describe("Users module", () => {
 			expect(response.status).toBe(204);
 		});
 	});
+
+	describe("POST /me", () => {
+		it("should return 401 for unauthenticated requests", async () => {
+			const response = await api.users.me.post({
+				email: "test@example.com",
+				password: "password123",
+				firstName: "Test",
+				lastName: "User",
+				address: null,
+				city: null,
+				country: null,
+				phoneNumber: null,
+				zipCode: null,
+			});
+			expect(response.status).toBe(401);
+		});
+
+		it("should allow customer to update their own profile", async () => {
+			const customerToken = await createCustomerUser(connection);
+
+			const response = await api.users.me.post(
+				{
+					email: "customer@example.com",
+					password: "newpassword123",
+					firstName: "UpdatedCustomer",
+					lastName: "UpdatedUser",
+					phoneNumber: "1234567890",
+					address: "123 Test Street",
+					zipCode: "12345",
+					city: "Test City",
+					country: "Test Country",
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.data?.firstName).toBe("UpdatedCustomer");
+			expect(response.data?.lastName).toBe("UpdatedUser");
+			expect(response.data?.phoneNumber).toBe("1234567890");
+			expect(response.data?.address).toBe("123 Test Street");
+			expect(response.data?.zipCode).toBe("12345");
+			expect(response.data?.city).toBe("Test City");
+			expect(response.data?.country).toBe("Test Country");
+			expect(response.data?.email).toBe("customer@example.com");
+			expect(response.data?.role).toBe("customer");
+		});
+
+		it("should allow admin to update their own profile", async () => {
+			const adminToken = await createAdminUser(connection);
+
+			const response = await api.users.me.post(
+				{
+					email: "admin@example.com",
+					password: "newadminpassword",
+					firstName: "UpdatedAdmin",
+					lastName: "UpdatedUser",
+					phoneNumber: "9876543210",
+					address: "456 Admin Street",
+					zipCode: "54321",
+					city: "Admin City",
+					country: "Admin Country",
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.data?.firstName).toBe("UpdatedAdmin");
+			expect(response.data?.lastName).toBe("UpdatedUser");
+			expect(response.data?.phoneNumber).toBe("9876543210");
+			expect(response.data?.email).toBe("admin@example.com");
+			expect(response.data?.role).toBe("admin");
+		});
+
+		it("should preserve user role when updating profile", async () => {
+			const customerToken = await createCustomerUser(connection);
+
+			const response = await api.users.me.post(
+				{
+					email: "customer@example.com",
+					password: "password123",
+					firstName: "Customer",
+					lastName: "User",
+					address: null,
+					city: null,
+					country: null,
+					phoneNumber: null,
+					zipCode: null,
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.data?.role).toBe("customer");
+		});
+
+		it("should return 409 when updating email to an existing one", async () => {
+			const adminToken = await createAdminUser(connection);
+			const customerToken = await createCustomerUser(connection);
+
+			const response = await api.users.me.post(
+				{
+					email: "admin@example.com",
+					password: "password123",
+					firstName: "Customer",
+					lastName: "User",
+					address: null,
+					city: null,
+					country: null,
+					phoneNumber: null,
+					zipCode: null,
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			expect(response.status).toBe(409);
+		});
+
+		it("should update password successfully", async () => {
+			const customerToken = await createCustomerUser(connection);
+
+			const response = await api.users.me.post(
+				{
+					email: "customer@example.com",
+					password: "completelynewpassword",
+					firstName: "Customer",
+					lastName: "User",
+					address: null,
+					city: null,
+					country: null,
+					phoneNumber: null,
+					zipCode: null,
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			expect(response.status).toBe(200);
+
+			// Verify new password works by logging in
+			const loginResult = await login(connection, {
+				email: "customer@example.com",
+				password: "completelynewpassword",
+			});
+
+			expect(loginResult.isOk()).toBe(true);
+		});
+
+		it("should allow updating with null optional fields", async () => {
+			const customerToken = await createCustomerUser(connection);
+
+			// First, set some values
+			await api.users.me.post(
+				{
+					email: "customer@example.com",
+					password: "password123",
+					firstName: "Customer",
+					lastName: "User",
+					phoneNumber: "1234567890",
+					address: "123 Test Street",
+					zipCode: "12345",
+					city: "Test City",
+					country: "Test Country",
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			// Now, update to null
+			const response = await api.users.me.post(
+				{
+					email: "customer@example.com",
+					password: "password123",
+					firstName: "Customer",
+					lastName: "User",
+					phoneNumber: null,
+					address: null,
+					zipCode: null,
+					city: null,
+					country: null,
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.data?.phoneNumber).toBeNull();
+			expect(response.data?.address).toBeNull();
+			expect(response.data?.zipCode).toBeNull();
+			expect(response.data?.city).toBeNull();
+			expect(response.data?.country).toBeNull();
+		});
+
+		it("should update email successfully if it's unique", async () => {
+			const customerToken = await createCustomerUser(connection);
+
+			const response = await api.users.me.post(
+				{
+					email: "newemail@example.com",
+					password: "password123",
+					firstName: "Customer",
+					lastName: "User",
+					address: null,
+					city: null,
+					country: null,
+					phoneNumber: null,
+					zipCode: null,
+				},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+
+			expect(response.status).toBe(200);
+			expect(response.data?.email).toBe("newemail@example.com");
+
+			// Verify login works with new email
+			const loginResult = await login(connection, {
+				email: "newemail@example.com",
+				password: "password123",
+			});
+
+			expect(loginResult.isOk()).toBe(true);
+		});
+	});
 });

@@ -252,3 +252,77 @@ export function deleteUser(tx: Database, id: string) {
 		return okAsync();
 	});
 }
+
+export type UpdateCurrentUserError =
+	| {
+			type: "user_not_found";
+			id: string;
+	  }
+	| {
+			type: "email_already_exists";
+			email: string;
+	  }
+	| {
+			type: "failed_to_update_user";
+	  };
+
+export function updateCurrentUser(
+	tx: Database,
+	id: string,
+	params: models.updateMeBody,
+) {
+	return ResultAsync.fromSafePromise(bcrypt.hash(params.password, 10)).andThen(
+		(hashedPassword) => {
+			return ResultAsync.fromPromise(
+				tx
+					.update(usersTable)
+					.set({
+						email: params.email,
+						passwordHash: hashedPassword,
+						firstName: params.firstName,
+						lastName: params.lastName,
+						phoneNumber: params.phoneNumber,
+						address: params.address,
+						zipCode: params.zipCode,
+						city: params.city,
+						country: params.country,
+						updatedAt: new Date(),
+					})
+					.where(eq(usersTable.id, id))
+					.returning({
+						id: usersTable.id,
+						email: usersTable.email,
+						firstName: usersTable.firstName,
+						lastName: usersTable.lastName,
+						phoneNumber: usersTable.phoneNumber,
+						address: usersTable.address,
+						zipCode: usersTable.zipCode,
+						city: usersTable.city,
+						country: usersTable.country,
+						role: usersTable.role,
+						createdAt: usersTable.createdAt,
+						updatedAt: usersTable.updatedAt,
+					}),
+				(err) =>
+					errorMapper<UpdateCurrentUserError>(err, {
+						onConflict: () => ({
+							type: "email_already_exists",
+							email: params.email,
+						}),
+						default: () => ({
+							type: "failed_to_update_user",
+						}),
+					}),
+			).andThen((res) => {
+				const user = res[0];
+				if (!user) {
+					return errAsync({
+						type: "user_not_found",
+						id: id,
+					} satisfies UpdateCurrentUserError as UpdateCurrentUserError);
+				}
+				return okAsync(user);
+			});
+		},
+	);
+}
