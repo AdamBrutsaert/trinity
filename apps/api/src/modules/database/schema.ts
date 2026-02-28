@@ -101,3 +101,37 @@ export const cartItemsTable = pgTable(
 	}),
 	(t) => [uniqueIndex("idx_unique_user_product").on(t.userId, t.productId)],
 );
+
+export const invoiceStatusEnum = pgEnum("invoice_status", [
+	"pending",
+	"completed",
+]);
+
+export const invoicesTable = pgTable("invoices", (t) => ({
+	id: t.uuid("id").defaultRandom().primaryKey(),
+	userId: t
+		.uuid("user_id")
+		.references(() => usersTable.id, { onDelete: "cascade" })
+		.notNull(),
+	paypalOrderId: t.varchar("paypal_order_id", { length: 255 }).notNull(),
+	status: invoiceStatusEnum("status").default("pending").notNull(),
+	totalAmount: t.numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
+	createdAt: t.timestamp("created_at").defaultNow().notNull(),
+	updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
+}));
+
+export const invoiceItemsTable = pgTable("invoice_items", (t) => ({
+	id: t.uuid("id").defaultRandom().primaryKey(),
+	invoiceId: t
+		.uuid("invoice_id")
+		.references(() => invoicesTable.id, { onDelete: "cascade" })
+		.notNull(),
+	productId: t
+		.uuid("product_id")
+		.references(() => productsTable.id, { onDelete: "cascade" })
+		.notNull(),
+	productName: t.varchar("product_name", { length: 255 }).notNull(),
+	unitPrice: t.numeric("unit_price", { precision: 10, scale: 2 }).notNull(),
+	quantity: t.integer("quantity").notNull(),
+	createdAt: t.timestamp("created_at").defaultNow().notNull(),
+}));

@@ -43,6 +43,13 @@
       "when": 1772283661839,
       "tag": "0005_tricky_nicolaos",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1772285719352,
+      "tag": "0006_rich_jean_grey",
+      "breakpoints": true
     }
   ]
 }

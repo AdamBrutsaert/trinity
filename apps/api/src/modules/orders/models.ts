@@ -41,3 +41,22 @@ export const failedToCalculateCartTotal = z.literal(
 export type failedToCalculateCartTotal = z.infer<
 	typeof failedToCalculateCartTotal
 >;
+
+export const emptyCart = z.literal("Cart is empty");
+export type emptyCart = z.infer<typeof emptyCart>;
+
+export const failedToFetchCartItems = z.literal("Failed to fetch cart items");
+export type failedToFetchCartItems = z.infer<typeof failedToFetchCartItems>;
+
+export const failedToCreateInvoice = z.literal("Failed to create invoice");
+export type failedToCreateInvoice = z.infer<typeof failedToCreateInvoice>;
+
+export const failedToCreateInvoiceItems = z.literal(
+	"Failed to create invoice items",
+);
+export type failedToCreateInvoiceItems = z.infer<
+	typeof failedToCreateInvoiceItems
+>;
+
+export const failedToClearCart = z.literal("Failed to clear cart");
+export type failedToClearCart = z.infer<typeof failedToClearCart>;
