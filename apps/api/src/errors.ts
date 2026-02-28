@@ -3,7 +3,7 @@ import { SQL } from "bun";
 import { DrizzleQueryError } from "drizzle-orm";
 
 export interface ErrorMapper<T> {
-	onConflict?: () => T;
+	onConflict?: (constraint: string | undefined) => T;
 	onForeignKeyViolation?: (constraint: string | undefined) => T;
 	default: () => T;
 }
@@ -14,7 +14,7 @@ export function errorMapper<T>(err: unknown, mappers: ErrorMapper<T>) {
 			switch (err.cause.errno) {
 				case "23505": // unique_violation
 					if (mappers.onConflict) {
-						return mappers.onConflict();
+						return mappers.onConflict(err.cause.constraint);
 					}
 					break;
 				case "23503": // foreign_key_violation

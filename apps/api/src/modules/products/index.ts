@@ -21,6 +21,7 @@ function createProductRoute(database: DatabasePlugin) {
 					(res) =>
 						status(201, {
 							...res,
+							price: Number.parseFloat(res.price),
 							createdAt: res.createdAt.toISOString(),
 							updatedAt: res.updatedAt.toISOString(),
 						}),
@@ -78,6 +79,7 @@ function getProductByIdRoute(database: DatabasePlugin) {
 					(res) =>
 						status(200, {
 							...res,
+							price: Number.parseFloat(res.price),
 							createdAt: res.createdAt.toISOString(),
 							updatedAt: res.updatedAt.toISOString(),
 						}),
@@ -126,6 +128,7 @@ function getProductByBarcodeRoute(database: DatabasePlugin) {
 					(res) =>
 						status(200, {
 							...res,
+							price: Number.parseFloat(res.price),
 							createdAt: res.createdAt.toISOString(),
 							updatedAt: res.updatedAt.toISOString(),
 						}),
@@ -176,6 +179,7 @@ function getProductsRoute(database: DatabasePlugin) {
 							200,
 							res.map((product) => ({
 								...product,
+								price: Number.parseFloat(product.price),
 								createdAt: product.createdAt.toISOString(),
 								updatedAt: product.updatedAt.toISOString(),
 							})),
@@ -210,6 +214,7 @@ function updateProductRoute(database: DatabasePlugin) {
 					(res) =>
 						status(200, {
 							...res,
+							price: Number.parseFloat(res.price),
 							createdAt: res.createdAt.toISOString(),
 							updatedAt: res.updatedAt.toISOString(),
 						}),

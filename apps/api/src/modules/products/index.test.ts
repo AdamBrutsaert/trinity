@@ -1,3 +1,4 @@
+import { SQL } from "bun";
 import {
 	afterAll,
 	afterEach,
@@ -7,7 +8,6 @@ import {
 	expect,
 	it,
 } from "bun:test";
-import { SQL } from "bun";
 
 import {
 	PostgreSqlContainer,
@@ -19,6 +19,7 @@ import { treaty } from "@elysiajs/eden";
 import { drizzle } from "drizzle-orm/bun-sql";
 import { migrate } from "drizzle-orm/bun-sql/migrator";
 
+import { createProductsModule } from ".";
 import { login } from "../auth/service";
 import { createBrand } from "../brands/service";
 import { createCategory } from "../categories/service";
@@ -28,7 +29,6 @@ import {
 	type Database,
 } from "../database";
 import { createUser } from "../users/service";
-import { createProductsModule } from ".";
 
 async function createAdminUser(tx: Database) {
 	await createUser(tx, {
@@ -127,6 +127,7 @@ describe("Products module", () => {
 				barcode: "123456789",
 				name: "Test Product",
 				description: "Test Description",
+				price: 9.99,
 				categoryId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 				brandId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 			});
@@ -138,6 +139,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 					brandId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 				},
@@ -155,6 +157,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 					brandId,
 				},
@@ -172,6 +175,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 				},
@@ -190,6 +194,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -201,6 +206,7 @@ describe("Products module", () => {
 				barcode: "123456789",
 				name: "Test Product",
 				description: "Test Description",
+				price: 9.99,
 				categoryId,
 				brandId,
 			});
@@ -216,6 +222,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -228,6 +235,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Another Product",
 					description: "Another Description",
+					price: 14.99,
 					categoryId,
 					brandId,
 				},
@@ -256,6 +264,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -282,6 +291,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -334,6 +344,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -358,6 +369,7 @@ describe("Products module", () => {
 					barcode: "987654321",
 					name: "Test Product 2",
 					description: "Test Description 2",
+					price: 12.99,
 					categoryId,
 					brandId,
 				},
@@ -392,6 +404,7 @@ describe("Products module", () => {
 					barcode: "111111111",
 					name: "Product 1",
 					description: "Description 1",
+					price: 10.99,
 					categoryId,
 					brandId,
 				},
@@ -404,6 +417,7 @@ describe("Products module", () => {
 					barcode: "222222222",
 					name: "Product 2",
 					description: "Description 2",
+					price: 11.99,
 					categoryId,
 					brandId,
 				},
@@ -444,6 +458,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -456,6 +471,7 @@ describe("Products module", () => {
 					barcode: "987654321",
 					name: "Test Product 2",
 					description: "Test Description 2",
+					price: 12.99,
 					categoryId,
 					brandId,
 				},
@@ -480,6 +496,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -492,6 +509,7 @@ describe("Products module", () => {
 					barcode: "987654321",
 					name: "Test Product 2",
 					description: "Test Description 2",
+					price: 12.99,
 					categoryId,
 					brandId,
 				},
@@ -525,6 +543,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 					brandId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 				});
@@ -538,6 +557,7 @@ describe("Products module", () => {
 						barcode: "123456789",
 						name: "Test Product",
 						description: "Test Description",
+						price: 9.99,
 						categoryId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 						brandId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 					},
@@ -555,6 +575,7 @@ describe("Products module", () => {
 						barcode: "123456789",
 						name: "Test Product",
 						description: "Test Description",
+						price: 9.99,
 						categoryId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 						brandId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 					},
@@ -573,6 +594,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -587,6 +609,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 					brandId,
 				},
@@ -605,6 +628,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -619,6 +643,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5",
 				},
@@ -637,6 +662,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -649,6 +675,7 @@ describe("Products module", () => {
 					barcode: "1234567890",
 					name: "Another Product",
 					description: "Another Description",
+					price: 14.99,
 					categoryId,
 					brandId,
 				},
@@ -664,6 +691,7 @@ describe("Products module", () => {
 						barcode: "123456789", // This barcode is already in use by response1
 						name: "Updated Product",
 						description: "Updated Description",
+						price: 19.99,
 						categoryId,
 						brandId,
 					},
@@ -682,6 +710,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},
@@ -696,6 +725,7 @@ describe("Products module", () => {
 					barcode: "987654321",
 					name: "Updated Product",
 					description: "Updated Description",
+					price: 15.99,
 					categoryId,
 					brandId,
 				},
@@ -707,6 +737,7 @@ describe("Products module", () => {
 				barcode: "987654321",
 				name: "Updated Product",
 				description: "Updated Description",
+				price: 15.99,
 				categoryId,
 				brandId,
 			});
@@ -745,6 +776,7 @@ describe("Products module", () => {
 					barcode: "123456789",
 					name: "Test Product",
 					description: "Test Description",
+					price: 9.99,
 					categoryId,
 					brandId,
 				},

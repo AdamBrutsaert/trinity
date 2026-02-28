@@ -66,6 +66,9 @@ export const productsTable = pgTable(
 			.references(() => categoriesTable.id, { onDelete: "cascade" })
 			.notNull(),
 
+		// Pricing
+		price: t.numeric("price", { precision: 10, scale: 2 }).notNull(),
+
 		// Nutritional information
 		energyKcal: t.integer("energy_kcal"),
 		fat: t.real("fat"),
@@ -79,18 +82,6 @@ export const productsTable = pgTable(
 	}),
 	(t) => [uniqueIndex("idx_unique_barcode").on(t.barcode)],
 );
-
-export const stocksTable = pgTable("stocks", (t) => ({
-	id: t.uuid("id").defaultRandom().primaryKey(),
-	productId: t
-		.uuid("product_id")
-		.references(() => productsTable.id, { onDelete: "cascade" })
-		.notNull(),
-	price: t.numeric("price", { precision: 10, scale: 2 }).notNull(),
-	quantity: t.integer("quantity").notNull(),
-	createdAt: t.timestamp("created_at").defaultNow().notNull(),
-	updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
-}));
 
 export const cartItemsTable = pgTable(
 	"cart_items",
