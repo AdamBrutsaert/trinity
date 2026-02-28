@@ -13,6 +13,7 @@ import {
 	createDatabasePlugin,
 } from "./modules/database";
 import { createHealthModule } from "./modules/health";
+import { createInvoicesModule } from "./modules/invoices";
 import { createOrdersModule } from "./modules/orders";
 import { createProductsModule } from "./modules/products";
 import { createUsersModule } from "./modules/users";
@@ -50,7 +51,8 @@ const app = new Elysia()
 	.use(createCategoriesModule(databasePlugin))
 	.use(createProductsModule(databasePlugin))
 	.use(createCartModule(databasePlugin))
-	.use(createOrdersModule(databasePlugin));
+	.use(createOrdersModule(databasePlugin))
+	.use(createInvoicesModule(databasePlugin));
 
 export default app;
 
