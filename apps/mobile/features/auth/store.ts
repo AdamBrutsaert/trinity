@@ -133,3 +133,42 @@ export function useLogout() {
 		},
 	});
 }
+
+export function useUpdateProfile() {
+	return useMutation({
+		mutationFn: async (data: {
+			email: string;
+			firstName: string;
+			lastName: string;
+			phoneNumber: string | null;
+			avatarId: number | null;
+		}) => {
+			return client.users.me.put({
+				email: data.email,
+				firstName: data.firstName,
+				lastName: data.lastName,
+				phoneNumber: data.phoneNumber,
+				address: null,
+				zipCode: null,
+				city: null,
+				country: null,
+			});
+		},
+		onSuccess: async (response, variables) => {
+			if (response.data) {
+				const user: User = {
+					email: response.data.email,
+					firstName: response.data.firstName,
+					lastName: response.data.lastName,
+					phoneNumber: response.data.phoneNumber,
+					avatarId: variables.avatarId,
+				};
+				await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(user));
+				useAuthStore.setState((state) => ({
+					...state,
+					user,
+				}));
+			}
+		},
+	});
+}

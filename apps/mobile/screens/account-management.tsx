@@ -20,7 +20,7 @@ import {
 } from "@/components/profile-avatar-picker";
 import { ProfileSaveBar } from "@/components/profile-save-bar";
 import { ProfileTextField } from "@/components/profile-text-field";
-import { useAuthStore } from "@/features/auth/store";
+import { useAuthStore, useUpdateProfile } from "@/features/auth/store";
 import { styles } from "@/styles/screens/account-management.styles";
 
 function computeInitials(
@@ -39,6 +39,7 @@ function computeInitials(
 export default function AccountManagementScreen() {
 	const insets = useSafeAreaInsets();
 	const { user } = useAuthStore();
+	const updateProfile = useUpdateProfile();
 
 	const [baseline, setBaseline] = useState<{
 		avatarId: number | null;
@@ -134,12 +135,13 @@ export default function AccountManagementScreen() {
 
 		setSaving(true);
 		try {
-			// await updateProfile({
-			// 	avatarId: avatarId ?? undefined,
-			// 	firstName: firstName.trim() || undefined,
-			// 	lastName: lastName.trim() || undefined,
-			// 	phoneNumber: phoneNumber.trim() || undefined,
-			// });
+			await updateProfile.mutateAsync({
+				avatarId: avatarId ?? null,
+				email: user?.email || "",
+				firstName: firstName.trim() || user?.firstName || "",
+				lastName: lastName.trim() || user?.lastName || "",
+				phoneNumber: phoneNumber.trim() || user?.phoneNumber || null,
+			});
 
 			setBaseline({
 				avatarId,
@@ -155,7 +157,17 @@ export default function AccountManagementScreen() {
 		} finally {
 			setSaving(false);
 		}
-	}, [avatarId, email, firstName, lastName, phoneNumber, isDirty, showToast]);
+	}, [
+		avatarId,
+		email,
+		firstName,
+		lastName,
+		phoneNumber,
+		isDirty,
+		showToast,
+		updateProfile,
+		user,
+	]);
 
 	const onSaveBarLayout = useCallback((e: LayoutChangeEvent) => {
 		const next = Math.ceil(e.nativeEvent.layout.height);
