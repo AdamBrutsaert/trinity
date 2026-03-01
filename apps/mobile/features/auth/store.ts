@@ -135,6 +135,8 @@ export function useLogout() {
 }
 
 export function useUpdateProfile() {
+	const { token } = useAuthStore();
+
 	return useMutation({
 		mutationFn: async (data: {
 			email: string;
@@ -143,16 +145,19 @@ export function useUpdateProfile() {
 			phoneNumber: string | null;
 			avatarId: number | null;
 		}) => {
-			return client.users.me.put({
-				email: data.email,
-				firstName: data.firstName,
-				lastName: data.lastName,
-				phoneNumber: data.phoneNumber,
-				address: null,
-				zipCode: null,
-				city: null,
-				country: null,
-			});
+			return client.users.me.put(
+				{
+					email: data.email,
+					firstName: data.firstName,
+					lastName: data.lastName,
+					phoneNumber: data.phoneNumber,
+					address: null,
+					zipCode: null,
+					city: null,
+					country: null,
+				},
+				{ headers: { Authorization: `Bearer ${token}` } },
+			);
 		},
 		onSuccess: async (response, variables) => {
 			if (response.data) {

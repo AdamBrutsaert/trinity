@@ -217,11 +217,6 @@ export default function AccountManagementScreen() {
 								<Text style={styles.email}>
 									{email.trim() || "No email set yet"}
 								</Text>
-								<Text style={styles.muted}>
-									Changes are saved locally for now.{" "}
-									<Text style={styles.mutedEmphasis}>Server sync</Text> will
-									come next.
-								</Text>
 							</View>
 						</View>
 					</View>
