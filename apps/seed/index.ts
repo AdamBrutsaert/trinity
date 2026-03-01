@@ -70,6 +70,25 @@ async function fetchProducts(page: number = 1): Promise<OpenFoodFactsResponse> {
 	return (await response.json()) as OpenFoodFactsResponse;
 }
 
+async function fetchProductByBarcode(
+	barcode: string,
+): Promise<OpenFoodFactsProduct | null> {
+	const url = new URL(
+		`https://world.openfoodfacts.org/api/v0/product/${barcode}.json`,
+	);
+
+	const response = await fetch(url.toString(), {
+		signal: AbortSignal.timeout(30000),
+	});
+
+	if (!response.ok) {
+		throw new Error(`HTTP error! status: ${response.status}`);
+	}
+
+	const data = await response.json();
+	return (data as any).product as OpenFoodFactsProduct;
+}
+
 function normalizeProduct(
 	data: OpenFoodFactsProduct,
 ): NormalizedProduct | null {
@@ -211,6 +230,28 @@ async function main() {
 	);
 
 	console.log("Starting Open Food Facts data import...");
+
+	const barcode = "5997523317232";
+	const productData = await fetchProductByBarcode(barcode);
+	if (productData) {
+		const normalized = normalizeProduct(productData);
+		if (normalized) {
+			try {
+				const brandId = await upsertBrand(db, normalized.brand);
+				const categoryId = await upsertCategory(db, normalized.category);
+				await upsertProduct(db, normalized, brandId, categoryId);
+				console.log(`✓ Imported product with barcode ${barcode}`);
+			} catch (error) {
+				console.error(
+					`Failed to import product with barcode ${barcode}: ${error}`,
+				);
+			}
+		} else {
+			console.warn(
+				`Product with barcode ${barcode} is missing required fields and was skipped.`,
+			);
+		}
+	}
 
 	for (let i = 1; i <= 10; i++) {
 		console.log(`Fetching page ${i}...`);
