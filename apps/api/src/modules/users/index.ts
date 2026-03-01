@@ -240,7 +240,7 @@ function updateMeRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
 		.use(authGuard("customer"))
-		.post(
+		.put(
 			"/me",
 			async ({ userId, body, database }) => {
 				const result = await database.transaction(async (tx) => {

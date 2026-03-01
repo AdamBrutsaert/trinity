@@ -20,6 +20,20 @@ function generateToken(userId: string, role: "customer" | "admin") {
 export function register(tx: Database, params: models.registerBody) {
 	return createUser(tx, { ...params, role: "customer" }).map(async (user) => ({
 		token: await generateToken(user.id, user.role),
+		user: {
+			id: user.id,
+			email: user.email,
+			firstName: user.firstName,
+			lastName: user.lastName,
+			phoneNumber: user.phoneNumber,
+			address: user.address,
+			zipCode: user.zipCode,
+			city: user.city,
+			country: user.country,
+			role: user.role,
+			createdAt: user.createdAt.toISOString(),
+			updatedAt: user.updatedAt.toISOString(),
+		},
 	}));
 }
 
@@ -61,7 +75,23 @@ export function login(tx: Database, params: models.loginBody) {
 				return okAsync(user);
 			});
 		})
-		.map(async (user) => ({ token: await generateToken(user.id, user.role) }));
+		.map(async (user) => ({
+			token: await generateToken(user.id, user.role),
+			user: {
+				id: user.id,
+				email: user.email,
+				firstName: user.firstName,
+				lastName: user.lastName,
+				phoneNumber: user.phoneNumber,
+				address: user.address,
+				zipCode: user.zipCode,
+				city: user.city,
+				country: user.country,
+				role: user.role,
+				createdAt: user.createdAt.toISOString(),
+				updatedAt: user.updatedAt.toISOString(),
+			},
+		}));
 }
 
 export function verifyToken(token: string) {

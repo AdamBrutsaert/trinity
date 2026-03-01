@@ -15,6 +15,20 @@ export type registerBody = z.infer<typeof registerBody>;
 
 export const registerResponse = z.object({
 	token: z.string(),
+	user: z.object({
+		id: z.string(),
+		email: z.string(),
+		firstName: z.string(),
+		lastName: z.string(),
+		phoneNumber: z.string().nullable(),
+		address: z.string().nullable(),
+		zipCode: z.string().nullable(),
+		city: z.string().nullable(),
+		country: z.string().nullable(),
+		role: z.enum(["customer", "admin"]),
+		createdAt: z.iso.datetime(),
+		updatedAt: z.iso.datetime(),
+	}),
 });
 export type registerResponse = z.infer<typeof registerResponse>;
 
@@ -32,6 +46,20 @@ export type loginBody = z.infer<typeof loginBody>;
 
 export const loginResponse = z.object({
 	token: z.string(),
+	user: z.object({
+		id: z.string(),
+		email: z.string(),
+		firstName: z.string(),
+		lastName: z.string(),
+		phoneNumber: z.string().nullable(),
+		address: z.string().nullable(),
+		zipCode: z.string().nullable(),
+		city: z.string().nullable(),
+		country: z.string().nullable(),
+		role: z.enum(["customer", "admin"]),
+		createdAt: z.iso.datetime(),
+		updatedAt: z.iso.datetime(),
+	}),
 });
 export type loginResponse = z.infer<typeof loginResponse>;
 

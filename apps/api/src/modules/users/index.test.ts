@@ -398,7 +398,6 @@ describe("Users module", () => {
 				.put(
 					{
 						email: "john.doe@example.com",
-						password: "password123",
 						firstName: "John",
 						lastName: "Doe",
 						role: "customer",
@@ -434,7 +433,6 @@ describe("Users module", () => {
 				.put(
 					{
 						email: "john.doe@example.com",
-						password: "otherpassword123",
 						firstName: "Johnny",
 						lastName: "Doe",
 						role: "customer",
@@ -495,11 +493,10 @@ describe("Users module", () => {
 		});
 	});
 
-	describe("POST /me", () => {
+	describe("PUT /me", () => {
 		it("should return 401 for unauthenticated requests", async () => {
-			const response = await api.users.me.post({
+			const response = await api.users.me.put({
 				email: "test@example.com",
-				password: "password123",
 				firstName: "Test",
 				lastName: "User",
 				address: null,
@@ -514,10 +511,9 @@ describe("Users module", () => {
 		it("should allow customer to update their own profile", async () => {
 			const customerToken = await createCustomerUser(connection);
 
-			const response = await api.users.me.post(
+			const response = await api.users.me.put(
 				{
 					email: "customer@example.com",
-					password: "newpassword123",
 					firstName: "UpdatedCustomer",
 					lastName: "UpdatedUser",
 					phoneNumber: "1234567890",
@@ -544,10 +540,9 @@ describe("Users module", () => {
 		it("should allow admin to update their own profile", async () => {
 			const adminToken = await createAdminUser(connection);
 
-			const response = await api.users.me.post(
+			const response = await api.users.me.put(
 				{
 					email: "admin@example.com",
-					password: "newadminpassword",
 					firstName: "UpdatedAdmin",
 					lastName: "UpdatedUser",
 					phoneNumber: "9876543210",
@@ -570,10 +565,9 @@ describe("Users module", () => {
 		it("should preserve user role when updating profile", async () => {
 			const customerToken = await createCustomerUser(connection);
 
-			const response = await api.users.me.post(
+			const response = await api.users.me.put(
 				{
 					email: "customer@example.com",
-					password: "password123",
 					firstName: "Customer",
 					lastName: "User",
 					address: null,
@@ -593,10 +587,9 @@ describe("Users module", () => {
 			await createAdminUser(connection);
 			const customerToken = await createCustomerUser(connection);
 
-			const response = await api.users.me.post(
+			const response = await api.users.me.put(
 				{
 					email: "admin@example.com",
-					password: "password123",
 					firstName: "Customer",
 					lastName: "User",
 					address: null,
@@ -611,43 +604,13 @@ describe("Users module", () => {
 			expect(response.status).toBe(409);
 		});
 
-		it("should update password successfully", async () => {
-			const customerToken = await createCustomerUser(connection);
-
-			const response = await api.users.me.post(
-				{
-					email: "customer@example.com",
-					password: "completelynewpassword",
-					firstName: "Customer",
-					lastName: "User",
-					address: null,
-					city: null,
-					country: null,
-					phoneNumber: null,
-					zipCode: null,
-				},
-				{ headers: { Authorization: `Bearer ${customerToken}` } },
-			);
-
-			expect(response.status).toBe(200);
-
-			// Verify new password works by logging in
-			const loginResult = await login(connection, {
-				email: "customer@example.com",
-				password: "completelynewpassword",
-			});
-
-			expect(loginResult.isOk()).toBe(true);
-		});
-
 		it("should allow updating with null optional fields", async () => {
 			const customerToken = await createCustomerUser(connection);
 
 			// First, set some values
-			await api.users.me.post(
+			await api.users.me.put(
 				{
 					email: "customer@example.com",
-					password: "password123",
 					firstName: "Customer",
 					lastName: "User",
 					phoneNumber: "1234567890",
@@ -660,10 +623,9 @@ describe("Users module", () => {
 			);
 
 			// Now, update to null
-			const response = await api.users.me.post(
+			const response = await api.users.me.put(
 				{
 					email: "customer@example.com",
-					password: "password123",
 					firstName: "Customer",
 					lastName: "User",
 					phoneNumber: null,
@@ -686,10 +648,9 @@ describe("Users module", () => {
 		it("should update email successfully if it's unique", async () => {
 			const customerToken = await createCustomerUser(connection);
 
-			const response = await api.users.me.post(
+			const response = await api.users.me.put(
 				{
 					email: "newemail@example.com",
-					password: "password123",
 					firstName: "Customer",
 					lastName: "User",
 					address: null,
@@ -704,10 +665,10 @@ describe("Users module", () => {
 			expect(response.status).toBe(200);
 			expect(response.data?.email).toBe("newemail@example.com");
 
-			// Verify login works with new email
+			// Verify login still works with original password and new email
 			const loginResult = await login(connection, {
 				email: "newemail@example.com",
-				password: "password123",
+				password: "customerpassword",
 			});
 
 			expect(loginResult.isOk()).toBe(true);

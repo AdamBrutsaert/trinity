@@ -79,6 +79,14 @@ describe("Auth module", () => {
 
 			expect(response.status).toBe(201);
 			expect(response.data).toHaveProperty("token");
+			expect(response.data).toHaveProperty("user");
+			expect(response.data?.user.email).toBe("john.doe@example.com");
+			expect(response.data?.user.firstName).toBe("John");
+			expect(response.data?.user.lastName).toBe("Doe");
+			expect(response.data?.user.role).toBe("customer");
+			expect(response.data?.user).toHaveProperty("id");
+			expect(response.data?.user).toHaveProperty("createdAt");
+			expect(response.data?.user).toHaveProperty("updatedAt");
 		});
 
 		it("should not register an user with an existing email", async () => {
@@ -136,6 +144,14 @@ describe("Auth module", () => {
 			});
 			expect(loginResponse.status).toBe(200);
 			expect(loginResponse.data).toHaveProperty("token");
+			expect(loginResponse.data).toHaveProperty("user");
+			expect(loginResponse.data?.user.email).toBe("john.doe@example.com");
+			expect(loginResponse.data?.user.firstName).toBe("John");
+			expect(loginResponse.data?.user.lastName).toBe("Doe");
+			expect(loginResponse.data?.user.role).toBe("customer");
+			expect(loginResponse.data?.user).toHaveProperty("id");
+			expect(loginResponse.data?.user).toHaveProperty("createdAt");
+			expect(loginResponse.data?.user).toHaveProperty("updatedAt");
 		});
 
 		it("should not login with invalid credentials", async () => {

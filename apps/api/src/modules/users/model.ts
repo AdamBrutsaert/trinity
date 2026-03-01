@@ -50,7 +50,6 @@ export type failedToFetchUsers = z.infer<typeof failedToFetchUsers>;
 
 export const updateUserBody = z.object({
 	email: z.email().max(255),
-	password: z.string().min(8).max(255),
 	firstName: z.string().max(100),
 	lastName: z.string().max(100),
 	phoneNumber: z.string().max(30).nullable(),
@@ -70,7 +69,6 @@ export type failedToDeleteUser = z.infer<typeof failedToDeleteUser>;
 
 export const updateMeBody = z.object({
 	email: z.email().max(255),
-	password: z.string().min(8).max(255),
 	firstName: z.string().max(100),
 	lastName: z.string().max(100),
 	phoneNumber: z.string().max(30).nullable(),
