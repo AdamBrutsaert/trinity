@@ -172,6 +172,12 @@ function getCartItemsRoute(database: DatabasePlugin) {
 								...item,
 								createdAt: item.createdAt.toISOString(),
 								updatedAt: item.updatedAt.toISOString(),
+								product: {
+									...item.product,
+									price: Number.parseFloat(item.product.price),
+									createdAt: item.product.createdAt.toISOString(),
+									updatedAt: item.product.updatedAt.toISOString(),
+								},
 							})),
 						),
 					(_err) =>

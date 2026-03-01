@@ -21,7 +21,36 @@ export const cartItemResponse = z.object({
 });
 export type cartItemResponse = z.infer<typeof cartItemResponse>;
 
-export const cartItemListResponse = z.array(cartItemResponse);
+export const cartItemWithProductResponse = z.object({
+	id: z.uuidv4(),
+	userId: z.uuidv4(),
+	productId: z.uuidv4(),
+	quantity: z.number(),
+	createdAt: z.iso.datetime(),
+	updatedAt: z.iso.datetime(),
+	product: z.object({
+		id: z.uuidv4(),
+		barcode: z.string(),
+		name: z.string(),
+		description: z.string().nullable(),
+		imageUrl: z.string().nullable(),
+		brandId: z.uuidv4(),
+		categoryId: z.uuidv4(),
+		price: z.number(),
+		energyKcal: z.number().nullable(),
+		fat: z.number().nullable(),
+		carbs: z.number().nullable(),
+		protein: z.number().nullable(),
+		salt: z.number().nullable(),
+		createdAt: z.iso.datetime(),
+		updatedAt: z.iso.datetime(),
+	}),
+});
+export type cartItemWithProductResponse = z.infer<
+	typeof cartItemWithProductResponse
+>;
+
+export const cartItemListResponse = z.array(cartItemWithProductResponse);
 export type cartItemListResponse = z.infer<typeof cartItemListResponse>;
 
 export const productNotFound = z.literal("Product not found");
