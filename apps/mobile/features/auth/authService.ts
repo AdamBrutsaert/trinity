@@ -1,9 +1,9 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios, {
 	type AxiosError,
 	type AxiosInstance,
 	type InternalAxiosRequestConfig,
 } from "axios";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { API_BASE_URL, API_ENDPOINTS } from "@/lib/api";
 

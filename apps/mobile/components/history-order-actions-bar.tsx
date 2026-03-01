@@ -1,9 +1,9 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import {
+	type LayoutChangeEvent,
 	Text,
 	TouchableOpacity,
 	View,
-	type LayoutChangeEvent,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 

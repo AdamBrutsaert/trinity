@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { View, type LayoutChangeEvent } from "react-native";
+import { useMemo } from "react";
+import { type LayoutChangeEvent, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import CartIcon from "@/assets/svg/cart.svg";

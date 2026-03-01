@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import {
 	SafeAreaView,
@@ -96,7 +96,7 @@ export default function DealsScreen() {
 						open={openPromos}
 						onPress={onTogglePromos}
 					>
-						{promos.map((p, index) => (
+						{promos.map((p) => (
 							<DealProductRow
 								key={p.id}
 								item={{

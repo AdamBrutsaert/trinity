@@ -1,7 +1,8 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 import ScanBarcodeIcon from "@/assets/svg/scan-barcode.svg";
+
 import { styles } from "../styles/components/cart-overview-card.styles";
 
 function formatEur(cents: number): string {

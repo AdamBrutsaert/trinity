@@ -1,5 +1,4 @@
-import React from "react";
-import { Text, TextInput, View, type TextInputProps } from "react-native";
+import { Text, TextInput, type TextInputProps, View } from "react-native";
 
 import { styles } from "@/styles/components/profile-text-field.styles";
 

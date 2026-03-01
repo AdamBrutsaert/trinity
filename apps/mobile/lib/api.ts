@@ -1,5 +1,5 @@
-import { NativeModules, Platform } from "react-native";
 import Constants from "expo-constants";
+import { NativeModules, Platform } from "react-native";
 
 const API_PORT = 3000;
 

@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, type LayoutChangeEvent, ScrollView, View } from "react-native";
 import {
 	SafeAreaView,
@@ -113,7 +113,7 @@ export default function HomeScreen() {
 				iconColor: "#fff",
 			},
 		],
-		[comingSoon],
+		[],
 	);
 
 	const dockBottomOffset = Math.max(0, (insets.bottom || 0) - 26);

@@ -1,5 +1,5 @@
 import { router } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	Image,
 	type LayoutChangeEvent,
@@ -32,7 +32,7 @@ function computeInitials(
 	const b = lastName.trim();
 	if (a || b) return `${a[0] ?? ""}${b[0] ?? ""}`.toUpperCase();
 	const e = email.trim();
-	if (e && e.includes("@")) return e[0].toUpperCase();
+	if (e?.includes("@")) return e[0].toUpperCase();
 	return "U";
 }
 

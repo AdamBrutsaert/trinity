@@ -1,5 +1,5 @@
 import { router, useLocalSearchParams } from "expo-router";
-import React, { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { type LayoutChangeEvent, ScrollView, Text, View } from "react-native";
 import {
 	SafeAreaView,

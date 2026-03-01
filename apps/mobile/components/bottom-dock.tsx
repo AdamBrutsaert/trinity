@@ -1,15 +1,15 @@
-import React from "react";
+import type React from "react";
 import {
+	type LayoutChangeEvent,
 	Text,
 	TouchableOpacity,
 	View,
-	type LayoutChangeEvent,
 } from "react-native";
 import type { SvgProps } from "react-native-svg";
 
-import { ActionButton } from "@/components/action-button";
 import CollapseActionsIcon from "@/assets/svg/collapse-actions.svg";
 import ShowActionsIcon from "@/assets/svg/show-actions.svg";
+import { ActionButton } from "@/components/action-button";
 import { styles } from "@/styles/components/bottom-dock.styles";
 
 export type BottomDockAction = {

@@ -1,5 +1,5 @@
-import React, { useMemo } from "react";
-import { Text, View, type LayoutChangeEvent } from "react-native";
+import { useMemo } from "react";
+import { type LayoutChangeEvent, Text, View } from "react-native";
 
 import { PrimaryButton } from "@/components/primary-button";
 import { styles } from "@/styles/components/profile-save-bar.styles";

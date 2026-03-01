@@ -1,10 +1,10 @@
-import React, { useCallback, useMemo, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
 import {
-	CameraView,
 	type BarcodeScanningResult,
+	CameraView,
 	useCameraPermissions,
 } from "expo-camera";
+import { useCallback, useMemo, useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
 import { styles } from "@/styles/components/product-scanner.styles";
 

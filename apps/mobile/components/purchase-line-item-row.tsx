@@ -1,8 +1,8 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Text, View } from "react-native";
 
-import { styles } from "@/styles/components/purchase-line-item-row.styles";
 import type { PurchaseLineItem } from "@/lib/fake-purchase-history";
+import { styles } from "@/styles/components/purchase-line-item-row.styles";
 
 function formatEur(cents: number): string {
 	const value = cents / 100;

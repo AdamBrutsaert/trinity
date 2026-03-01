@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Animated, Text, View } from "react-native";
 
 import { styles } from "@/styles/components/apple-toast.styles";

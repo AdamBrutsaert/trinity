@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
 import { QuantityStepper } from "@/components/quantity-stepper";
