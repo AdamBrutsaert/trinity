@@ -11,8 +11,8 @@ export interface User {
 	email: string;
 	firstName: string;
 	lastName: string;
-	phoneNumber?: string;
-	avatarId?: number | null;
+	phoneNumber: string | null;
+	avatarId: number | null;
 }
 
 interface AuthState {
@@ -58,13 +58,14 @@ export function useLogin() {
 		onMutate: () => {
 			useAuthStore.setState({ loading: true });
 		},
-		onSuccess: async (response, variables) => {
+		onSuccess: async (response) => {
 			if (response.data) {
 				const user: User = {
-					email: variables.email,
-					firstName: "TO BE FILLED",
-					lastName: "TO BE FILLED",
-					phoneNumber: "TO BE FILLED",
+					email: response.data.user.email,
+					firstName: response.data.user.firstName,
+					lastName: response.data.user.lastName,
+					phoneNumber: response.data.user.phoneNumber,
+					avatarId: null,
 				};
 				await Promise.all([
 					AsyncStorage.setItem(TOKEN_KEY, response.data.token),
@@ -94,13 +95,14 @@ export function useRegister() {
 		onMutate: () => {
 			useAuthStore.setState({ loading: true });
 		},
-		onSuccess: async (response, variables) => {
+		onSuccess: async (response) => {
 			if (response.data) {
 				const user: User = {
-					email: variables.email,
-					firstName: variables.firstName,
-					lastName: variables.lastName,
-					phoneNumber: variables.phoneNumber,
+					email: response.data.user.email,
+					firstName: response.data.user.firstName,
+					lastName: response.data.user.lastName,
+					phoneNumber: response.data.user.phoneNumber || null,
+					avatarId: null,
 				};
 				await Promise.all([
 					AsyncStorage.setItem(TOKEN_KEY, response.data.token),
