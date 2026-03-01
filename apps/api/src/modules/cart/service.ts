@@ -177,17 +177,35 @@ export type GetCartItemsError = {
 
 export function getCartItems(tx: Database, userId: string) {
 	return ResultAsync.fromPromise(
-		tx.query.cartItemsTable.findMany({
-			where: (table, { eq }) => eq(table.userId, userId),
-			columns: {
-				id: true,
-				userId: true,
-				productId: true,
-				quantity: true,
-				createdAt: true,
-				updatedAt: true,
-			},
-		}),
+		tx
+			.select({
+				id: cartItemsTable.id,
+				userId: cartItemsTable.userId,
+				productId: cartItemsTable.productId,
+				quantity: cartItemsTable.quantity,
+				createdAt: cartItemsTable.createdAt,
+				updatedAt: cartItemsTable.updatedAt,
+				product: {
+					id: productsTable.id,
+					barcode: productsTable.barcode,
+					name: productsTable.name,
+					description: productsTable.description,
+					imageUrl: productsTable.imageUrl,
+					brandId: productsTable.brandId,
+					categoryId: productsTable.categoryId,
+					price: productsTable.price,
+					energyKcal: productsTable.energyKcal,
+					fat: productsTable.fat,
+					carbs: productsTable.carbs,
+					protein: productsTable.protein,
+					salt: productsTable.salt,
+					createdAt: productsTable.createdAt,
+					updatedAt: productsTable.updatedAt,
+				},
+			})
+			.from(cartItemsTable)
+			.innerJoin(productsTable, eq(cartItemsTable.productId, productsTable.id))
+			.where(eq(cartItemsTable.userId, userId)),
 		(err) =>
 			errorMapper<GetCartItemsError>(err, {
 				default: () => ({

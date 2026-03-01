@@ -17,7 +17,7 @@ import { initializeAuth, useAuthStore } from "@/features/auth/store";
 import { useColorScheme } from "@/hooks/use-color-scheme";
 import { styles } from "@/styles/root-layout.styles";
 
-const queryClient = new QueryClient();
+export const queryClient = new QueryClient();
 
 export default function RootLayout() {
 	const colorScheme = useColorScheme();
