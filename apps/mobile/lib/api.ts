@@ -1,14 +1,15 @@
+import { treaty } from "@elysiajs/eden";
+import type App from "@trinity/api";
 import Constants from "expo-constants";
 import { NativeModules, Platform } from "react-native";
 
 const API_PORT = 3000;
 
 function getDevServerHost(): string | null {
-	const constantsAny = Constants as any;
 	const hostUri: unknown =
 		Constants?.expoConfig?.hostUri ??
-		constantsAny?.manifest?.debuggerHost ??
-		constantsAny?.manifest2?.extra?.expoClient?.hostUri;
+		Constants?.manifest?.debuggerHost ??
+		Constants?.manifest2?.extra?.expoClient?.hostUri;
 
 	if (typeof hostUri === "string" && hostUri.length > 0) {
 		const match = hostUri.match(
@@ -17,7 +18,7 @@ function getDevServerHost(): string | null {
 		if (match?.[1]) return match[1];
 	}
 
-	const scriptURL = (NativeModules as any)?.SourceCode?.scriptURL as unknown;
+	const scriptURL = NativeModules?.SourceCode?.scriptURL;
 	if (typeof scriptURL !== "string") return null;
 
 	const httpMatch = scriptURL.match(/^https?:\/\/([^:/?#]+)(?::\d+)?/i);
@@ -47,9 +48,6 @@ function computeApiBaseUrl(): string {
 	return `http://localhost:${API_PORT}`;
 }
 
-export const API_BASE_URL = computeApiBaseUrl();
-
-export const API_ENDPOINTS = {
-	LOGIN: "/auth/login",
-	REGISTER: "/auth/register",
-} as const;
+export const client = treaty<typeof App>(computeApiBaseUrl(), {
+	throwHttpError: true,
+});

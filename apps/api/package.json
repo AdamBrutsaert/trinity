@@ -8,6 +8,7 @@
 		"migrate": "drizzle-kit migrate"
 	},
 	"exports": {
+		".": "./src/index.ts",
 		"./db": "./src/modules/database/index.ts",
 		"./db/schema": "./src/modules/database/schema.ts",
 		"./users": "./src/modules/users/service.ts",

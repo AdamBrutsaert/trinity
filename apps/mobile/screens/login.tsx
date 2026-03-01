@@ -11,12 +11,12 @@ import {
 	View,
 } from "react-native";
 
-import { useAuth } from "@/features/auth/AuthContext";
+import { useLogin } from "@/features/auth/store";
 import { styles } from "@/styles/screens/login.styles";
 
 export default function LoginScreen() {
 	const router = useRouter();
-	const { login } = useAuth();
+	const login = useLogin();
 
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
@@ -35,9 +35,12 @@ export default function LoginScreen() {
 
 		setLoading(true);
 		try {
-			const result = await login(email, password);
-			if (!result.success) {
-				Alert.alert("Sign-in failed", result.error || "Something went wrong.");
+			const result = await login.mutateAsync({ email, password });
+			if (!result.data) {
+				Alert.alert(
+					"Sign-in failed",
+					String(result.error.value) || "Something went wrong.",
+				);
 				return;
 			}
 			router.replace("/");

@@ -14,11 +14,12 @@ import { BottomDock } from "@/components/bottom-dock";
 import { HomeDealsRecommendationsSection } from "@/components/home-deals-recommendations-section";
 import { HomeHeader } from "@/components/home-header";
 import { HomeNotificationsSection } from "@/components/home-notifications-section";
-import { useAuth } from "@/features/auth/AuthContext";
+import { useAuthStore, useLogout } from "@/features/auth/store";
 import { styles } from "@/styles/screens/home.styles";
 
 export default function HomeScreen() {
-	const { user, logout } = useAuth();
+	const { user } = useAuthStore();
+	const logout = useLogout();
 	const insets = useSafeAreaInsets();
 
 	const [dockHeight, setDockHeight] = useState(0);
@@ -66,8 +67,8 @@ export default function HomeScreen() {
 		[],
 	);
 
-	const handleLogout = async () => {
-		await logout();
+	const handleLogout = () => {
+		logout.mutate();
 	};
 
 	const comingSoon = useCallback((featureName: string) => {

@@ -11,7 +11,7 @@ import {
 	View,
 } from "react-native";
 
-import { useAuth } from "@/features/auth/AuthContext";
+import { useRegister } from "@/features/auth/store";
 import { styles } from "@/styles/screens/register.styles";
 
 type FormData = {
@@ -25,7 +25,7 @@ type FormData = {
 
 export default function RegisterScreen() {
 	const router = useRouter();
-	const { register } = useAuth();
+	const register = useRegister();
 
 	const [formData, setFormData] = useState<FormData>({
 		email: "",
@@ -69,7 +69,7 @@ export default function RegisterScreen() {
 
 		setLoading(true);
 		try {
-			const result = await register({
+			const result = await register.mutateAsync({
 				email: formData.email,
 				password: formData.password,
 				firstName: formData.firstName,
@@ -77,8 +77,11 @@ export default function RegisterScreen() {
 				phoneNumber: formData.phoneNumber || undefined,
 			});
 
-			if (!result.success) {
-				Alert.alert("Sign-up failed", result.error || "Something went wrong.");
+			if (!result.data) {
+				Alert.alert(
+					"Sign-up failed",
+					String(result.error.value) || "Something went wrong.",
+				);
 				return;
 			}
 

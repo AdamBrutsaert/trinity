@@ -20,7 +20,7 @@ import {
 } from "@/components/profile-avatar-picker";
 import { ProfileSaveBar } from "@/components/profile-save-bar";
 import { ProfileTextField } from "@/components/profile-text-field";
-import { useAuth } from "@/features/auth/AuthContext";
+import { useAuthStore } from "@/features/auth/store";
 import { styles } from "@/styles/screens/account-management.styles";
 
 function computeInitials(
@@ -38,7 +38,7 @@ function computeInitials(
 
 export default function AccountManagementScreen() {
 	const insets = useSafeAreaInsets();
-	const { user, updateProfile } = useAuth();
+	const { user } = useAuthStore();
 
 	const [baseline, setBaseline] = useState<{
 		avatarId: number | null;
@@ -134,12 +134,12 @@ export default function AccountManagementScreen() {
 
 		setSaving(true);
 		try {
-			await updateProfile({
-				avatarId: avatarId ?? undefined,
-				firstName: firstName.trim() || undefined,
-				lastName: lastName.trim() || undefined,
-				phoneNumber: phoneNumber.trim() || undefined,
-			});
+			// await updateProfile({
+			// 	avatarId: avatarId ?? undefined,
+			// 	firstName: firstName.trim() || undefined,
+			// 	lastName: lastName.trim() || undefined,
+			// 	phoneNumber: phoneNumber.trim() || undefined,
+			// });
 
 			setBaseline({
 				avatarId,
@@ -155,16 +155,7 @@ export default function AccountManagementScreen() {
 		} finally {
 			setSaving(false);
 		}
-	}, [
-		avatarId,
-		email,
-		firstName,
-		lastName,
-		phoneNumber,
-		isDirty,
-		showToast,
-		updateProfile,
-	]);
+	}, [avatarId, email, firstName, lastName, phoneNumber, isDirty, showToast]);
 
 	const onSaveBarLayout = useCallback((e: LayoutChangeEvent) => {
 		const next = Math.ceil(e.nativeEvent.layout.height);
