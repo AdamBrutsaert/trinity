@@ -21,6 +21,7 @@ import {
 import { ProfileSaveBar } from "@/components/profile-save-bar";
 import { ProfileTextField } from "@/components/profile-text-field";
 import { useAuthStore, useUpdateProfile } from "@/features/auth/store";
+import { capitalize } from "@/lib/string";
 import { styles } from "@/styles/screens/account-management.styles";
 
 function computeInitials(
@@ -216,6 +217,9 @@ export default function AccountManagementScreen() {
 								<Text style={styles.name}>{displayName}</Text>
 								<Text style={styles.email}>
 									{email.trim() || "No email set yet"}
+								</Text>
+								<Text style={styles.role}>
+									{capitalize(user?.role || "customer")}
 								</Text>
 							</View>
 						</View>

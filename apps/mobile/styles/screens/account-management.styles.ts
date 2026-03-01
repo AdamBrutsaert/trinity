@@ -104,6 +104,12 @@ export const styles = StyleSheet.create({
 		color: "#D4002A",
 		fontWeight: "900",
 	},
+	role: {
+		marginTop: 4,
+		fontSize: 12,
+		color: "#D4002A",
+		fontWeight: "900",
+	},
 	fields: {
 		gap: 12,
 	},

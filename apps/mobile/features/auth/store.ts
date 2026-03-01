@@ -13,6 +13,7 @@ export interface User {
 	lastName: string;
 	phoneNumber: string | null;
 	avatarId: number | null;
+	role: "customer" | "admin";
 }
 
 interface AuthState {
@@ -66,6 +67,7 @@ export function useLogin() {
 					lastName: response.data.user.lastName,
 					phoneNumber: response.data.user.phoneNumber,
 					avatarId: null,
+					role: response.data.user.role,
 				};
 				await Promise.all([
 					AsyncStorage.setItem(TOKEN_KEY, response.data.token),
@@ -103,6 +105,7 @@ export function useRegister() {
 					lastName: response.data.user.lastName,
 					phoneNumber: response.data.user.phoneNumber || null,
 					avatarId: null,
+					role: response.data.user.role,
 				};
 				await Promise.all([
 					AsyncStorage.setItem(TOKEN_KEY, response.data.token),
@@ -167,6 +170,7 @@ export function useUpdateProfile() {
 					lastName: response.data.lastName,
 					phoneNumber: response.data.phoneNumber,
 					avatarId: variables.avatarId,
+					role: response.data.role,
 				};
 				await AsyncStorage.setItem(PROFILE_KEY, JSON.stringify(user));
 				useAuthStore.setState((state) => ({
