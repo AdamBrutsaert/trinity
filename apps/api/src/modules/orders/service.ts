@@ -11,7 +11,11 @@ import {
 	invoicesTable,
 	productsTable,
 } from "../database/schema";
-import { createPaypalOrderSchema, getPaypalAccessTokenSchema } from "./models";
+import {
+	capturePaypalOrderSchema,
+	createPaypalOrderSchema,
+	getPaypalAccessTokenSchema,
+} from "./models";
 
 type GetAccessTokenError =
 	| {
@@ -236,6 +240,80 @@ function createInvoice(
 export type CreateCartPaypalOrderError =
 	| CreatePaypalOrderError
 	| CreateInvoiceError;
+
+export type CapturePaypalOrderError =
+	| GetAccessTokenError
+	| {
+			type: "capture_failed";
+	  }
+	| {
+			type: "invoice_not_found";
+	  }
+	| {
+			type: "failed_to_update_invoice";
+	  };
+
+export function captureCartPaypalOrder(tx: Database, paypalOrderId: string) {
+	return getPaypalAccessToken().andThen((accessToken) => {
+		return ResultAsync.fromPromise(
+			fetch(
+				`${env.PAYPAL_BASE_URL}/v2/checkout/orders/${paypalOrderId}/capture`,
+				{
+					method: "POST",
+					headers: {
+						Authorization: `Bearer ${accessToken}`,
+						"Content-Type": "application/json",
+					},
+				},
+			),
+			(_error) =>
+				({
+					type: "fetch_error",
+				}) satisfies CapturePaypalOrderError as CapturePaypalOrderError,
+		)
+			.andThen((response) =>
+				ResultAsync.fromPromise(
+					response.json(),
+					(_error) =>
+						({
+							type: "invalid_json",
+						}) satisfies CapturePaypalOrderError as CapturePaypalOrderError,
+				),
+			)
+			.andThen((json) => {
+				const parsed = capturePaypalOrderSchema.safeParse(json);
+				if (!parsed.success) {
+					return errAsync({
+						type: "capture_failed",
+					} satisfies CapturePaypalOrderError as CapturePaypalOrderError);
+				}
+				return okAsync(parsed.data);
+			})
+			.andThen((capturedOrder) =>
+				ResultAsync.fromPromise(
+					tx
+						.update(invoicesTable)
+						.set({ status: "completed" })
+						.where(eq(invoicesTable.paypalOrderId, capturedOrder.id))
+						.returning({ id: invoicesTable.id }),
+					(err) =>
+						errorMapper<CapturePaypalOrderError>(err, {
+							default: () => ({
+								type: "failed_to_update_invoice",
+							}),
+						}),
+				),
+			)
+			.andThen((rows) => {
+				if (rows.length === 0) {
+					return errAsync({
+						type: "invoice_not_found",
+					} satisfies CapturePaypalOrderError as CapturePaypalOrderError);
+				}
+				return okAsync({ orderId: paypalOrderId });
+			});
+	});
+}
 
 export function createCartPaypalOrder(tx: Database, userId: string) {
 	return getCartTotalPrice(tx, userId).andThen((total) => {

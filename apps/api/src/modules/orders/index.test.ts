@@ -178,6 +178,20 @@ describe("Orders module", () => {
 				);
 			}
 
+			// Mock capture order request (must be checked before create)
+			if (
+				urlString.includes("/v2/checkout/orders") &&
+				urlString.endsWith("/capture")
+			) {
+				return new Response(
+					JSON.stringify({
+						id: "MOCK_PAYPAL_ORDER_ID",
+						status: "COMPLETED",
+					}),
+					{ status: 201 },
+				);
+			}
+
 			// Mock create order request
 			if (urlString.includes("/v2/checkout/orders")) {
 				return new Response(
@@ -519,6 +533,172 @@ describe("Orders module", () => {
 
 			// biome-ignore lint/style/noNonNullAssertion: Invoice was just created above
 			expect(invoices[0]!.totalAmount).toBe("79.90"); // 10 * 7.99
+		});
+	});
+
+	describe("POST /:orderId/capture", () => {
+		it("should return 401 for unauthenticated requests", async () => {
+			const response = await api
+				.orders({ orderId: "MOCK_PAYPAL_ORDER_ID" })
+				.capture.post();
+			expect(response.status).toBe(401);
+		});
+
+		it("should capture an order and mark the invoice as completed", async () => {
+			const customerToken = await createCustomerUser(connection);
+			const product = await createTestProduct(
+				connection,
+				"1234567890123",
+				"Capture Product",
+				19.99,
+				"Brand Capture",
+				"Category Capture",
+			);
+
+			const users = await connection.query.usersTable.findMany({
+				where: (table, { eq }) => eq(table.email, "customer@example.com"),
+			});
+			// biome-ignore lint/style/noNonNullAssertion: User was just created in createCustomerUser
+			const userId = users[0]!.id;
+
+			await addItemToCart(connection, userId, product.id, 1);
+
+			// First create the order to get a pending invoice
+			const createResponse = await api.orders.post(
+				{},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+			expect(createResponse.status).toBe(200);
+
+			// Verify invoice is pending
+			const pendingInvoices = await connection
+				.select()
+				.from(invoicesTable)
+				.where(eq(invoicesTable.userId, userId));
+			expect(pendingInvoices[0]?.status).toBe("pending");
+
+			// Now capture the order
+			const captureResponse = await api
+				.orders({ orderId: "MOCK_PAYPAL_ORDER_ID" })
+				.capture.post(
+					{},
+					{ headers: { Authorization: `Bearer ${customerToken}` } },
+				);
+
+			expect(captureResponse.status).toBe(200);
+			expect(captureResponse.data).toHaveProperty(
+				"orderId",
+				"MOCK_PAYPAL_ORDER_ID",
+			);
+
+			// Verify invoice is now completed
+			const completedInvoices = await connection
+				.select()
+				.from(invoicesTable)
+				.where(eq(invoicesTable.userId, userId));
+
+			expect(completedInvoices).toHaveLength(1);
+			expect(completedInvoices[0]?.status).toBe("completed");
+		});
+
+		it("should return 404 when no invoice matches the provided orderId", async () => {
+			const customerToken = await createCustomerUser(connection);
+
+			// Capture a non-existent order — PayPal side mocked as COMPLETED
+			// but the DB update will find 0 rows
+			const response = await api
+				.orders({ orderId: "MOCK_PAYPAL_ORDER_ID" })
+				.capture.post(
+					{},
+					{ headers: { Authorization: `Bearer ${customerToken}` } },
+				);
+
+			expect(response.status).toBe(404);
+		});
+
+		it("should return 502 when PayPal capture returns a non-COMPLETED status", async () => {
+			const customerToken = await createCustomerUser(connection);
+			const product = await createTestProduct(
+				connection,
+				"1234567890123",
+				"Capture Fail Product",
+				9.99,
+				"Brand CaptFail",
+				"Category CaptFail",
+			);
+
+			const users = await connection.query.usersTable.findMany({
+				where: (table, { eq }) => eq(table.email, "customer@example.com"),
+			});
+			// biome-ignore lint/style/noNonNullAssertion: User was just created in createCustomerUser
+			const userId = users[0]!.id;
+			await addItemToCart(connection, userId, product.id, 1);
+
+			const createResponse = await api.orders.post(
+				{},
+				{ headers: { Authorization: `Bearer ${customerToken}` } },
+			);
+			expect(createResponse.status).toBe(200);
+
+			// Override mock to return a non-COMPLETED status for capture
+			global.fetch = mock(
+				// biome-ignore lint/suspicious/noExplicitAny: Type cast required for global.fetch mock compatibility
+				async (url: string | URL | Request, _options?: any) => {
+					const urlString = typeof url === "string" ? url : url.toString();
+					if (urlString.includes("/v1/oauth2/token")) {
+						return new Response(
+							JSON.stringify({ access_token: "mock_access_token" }),
+							{ status: 200 },
+						);
+					}
+					if (
+						urlString.includes("/v2/checkout/orders") &&
+						urlString.endsWith("/capture")
+					) {
+						return new Response(
+							JSON.stringify({ id: "MOCK_PAYPAL_ORDER_ID", status: "VOIDED" }),
+							{ status: 200 },
+						);
+					}
+					return new Response("Not Found", { status: 404 });
+				},
+				// biome-ignore lint/suspicious/noExplicitAny: Type cast required for global.fetch mock compatibility
+			) as any;
+
+			const captureResponse = await api
+				.orders({ orderId: "MOCK_PAYPAL_ORDER_ID" })
+				.capture.post(
+					{},
+					{ headers: { Authorization: `Bearer ${customerToken}` } },
+				);
+
+			expect(captureResponse.status).toBe(502);
+
+			// Invoice should remain pending
+			const invoices = await connection
+				.select()
+				.from(invoicesTable)
+				.where(eq(invoicesTable.userId, userId));
+			expect(invoices[0]?.status).toBe("pending");
+		});
+
+		it("should return 502 when PayPal access token request fails during capture", async () => {
+			const customerToken = await createCustomerUser(connection);
+
+			// Override mock to fail the token endpoint
+			global.fetch = mock(async () => {
+				return new Response("Internal Server Error", { status: 500 });
+				// biome-ignore lint/suspicious/noExplicitAny: Type cast required for global.fetch mock compatibility
+			}) as any;
+
+			const response = await api
+				.orders({ orderId: "MOCK_PAYPAL_ORDER_ID" })
+				.capture.post(
+					{},
+					{ headers: { Authorization: `Bearer ${customerToken}` } },
+				);
+
+			expect(response.status).toBe(502);
 		});
 	});
 });

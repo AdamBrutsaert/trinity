@@ -90,10 +90,78 @@ export function createOrderRoute(database: DatabasePlugin) {
 		);
 }
 
+export function createCaptureOrderRoute(database: DatabasePlugin) {
+	return new Elysia()
+		.use(database)
+		.use(authGuard("customer"))
+		.post(
+			"/:orderId/capture",
+			async ({ status, params, database }) => {
+				const result = await database.transaction(async (tx) =>
+					service.captureCartPaypalOrder(tx, params.orderId),
+				);
+				return result.match(
+					(response) => status(200, { orderId: response.orderId }),
+					(error) => {
+						switch (error.type) {
+							case "fetch_error":
+								return status(
+									502,
+									"Failed to fetch access token" satisfies models.failedToFetchAccessTokenResponse,
+								);
+							case "invalid_json":
+								return status(
+									502,
+									"Invalid JSON response from PayPal" satisfies models.invalidJsonResponse,
+								);
+							case "invalid_response":
+								return status(
+									502,
+									"Invalid response structure from PayPal" satisfies models.invalidResponseStructure,
+								);
+							case "capture_failed":
+								return status(
+									502,
+									"PayPal capture failed" satisfies models.captureFailed,
+								);
+							case "invoice_not_found":
+								return status(
+									404,
+									"Invoice not found" satisfies models.invoiceNotFound,
+								);
+							case "failed_to_update_invoice":
+								return status(
+									500,
+									"Failed to update invoice" satisfies models.failedToUpdateInvoice,
+								);
+							default:
+								assertNever(error);
+						}
+					},
+				);
+			},
+			{
+				response: {
+					200: models.captureOrderResponse,
+					404: models.invoiceNotFound,
+					500: models.failedToUpdateInvoice,
+					502: z.union([
+						models.failedToFetchAccessTokenResponse,
+						models.invalidJsonResponse,
+						models.invalidResponseStructure,
+						models.captureFailed,
+					]),
+				},
+			},
+		);
+}
+
 export function createOrdersModule(database: DatabasePlugin) {
 	return new Elysia({
 		name: "orders",
 		prefix: "/orders",
 		tags: ["orders"],
-	}).use(createOrderRoute(database));
+	})
+		.use(createOrderRoute(database))
+		.use(createCaptureOrderRoute(database));
 }

@@ -60,3 +60,23 @@ export type failedToCreateInvoiceItems = z.infer<
 
 export const failedToClearCart = z.literal("Failed to clear cart");
 export type failedToClearCart = z.infer<typeof failedToClearCart>;
+
+export const capturePaypalOrderSchema = z.object({
+	id: z.string(),
+	status: z.literal("COMPLETED"),
+});
+export type capturePaypalOrderSchema = z.infer<typeof capturePaypalOrderSchema>;
+
+export const captureOrderResponse = z.object({
+	orderId: z.string(),
+});
+export type captureOrderResponse = z.infer<typeof captureOrderResponse>;
+
+export const invoiceNotFound = z.literal("Invoice not found");
+export type invoiceNotFound = z.infer<typeof invoiceNotFound>;
+
+export const failedToUpdateInvoice = z.literal("Failed to update invoice");
+export type failedToUpdateInvoice = z.infer<typeof failedToUpdateInvoice>;
+
+export const captureFailed = z.literal("PayPal capture failed");
+export type captureFailed = z.infer<typeof captureFailed>;
