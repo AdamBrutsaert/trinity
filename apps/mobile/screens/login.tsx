@@ -14,6 +14,27 @@ import {
 import { useLogin } from "@/features/auth/store";
 import { styles } from "@/styles/screens/login.styles";
 
+function formatApiError(value: unknown): string {
+	if (!value) return "Something went wrong.";
+	if (typeof value === "string") return value;
+	if (value instanceof Error) return value.message;
+	if (typeof value === "object") {
+		const anyValue = value as any;
+		const message = anyValue?.message;
+		const property = anyValue?.property;
+		if (typeof message === "string" && typeof property === "string") {
+			return `${property}: ${message}`;
+		}
+		if (typeof message === "string") return message;
+		try {
+			return JSON.stringify(value);
+		} catch {
+			return "Something went wrong.";
+		}
+	}
+	return String(value);
+}
+
 export default function LoginScreen() {
 	const router = useRouter();
 	const login = useLogin();
@@ -39,7 +60,7 @@ export default function LoginScreen() {
 			if (!result.data) {
 				Alert.alert(
 					"Sign-in failed",
-					String(result.error.value) || "Something went wrong.",
+					formatApiError(result.error?.value),
 				);
 				return;
 			}

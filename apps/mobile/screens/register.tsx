@@ -14,6 +14,27 @@ import {
 import { useRegister } from "@/features/auth/store";
 import { styles } from "@/styles/screens/register.styles";
 
+function formatApiError(value: unknown): string {
+	if (!value) return "Something went wrong.";
+	if (typeof value === "string") return value;
+	if (value instanceof Error) return value.message;
+	if (typeof value === "object") {
+		const anyValue = value as any;
+		const message = anyValue?.message;
+		const property = anyValue?.property;
+		if (typeof message === "string" && typeof property === "string") {
+			return `${property}: ${message}`;
+		}
+		if (typeof message === "string") return message;
+		try {
+			return JSON.stringify(value);
+		} catch {
+			return "Something went wrong.";
+		}
+	}
+	return String(value);
+}
+
 type FormData = {
 	email: string;
 	password: string;
@@ -57,8 +78,8 @@ export default function RegisterScreen() {
 			return;
 		}
 
-		if (formData.password.length < 6) {
-			Alert.alert("Error", "Password must be at least 6 characters long.");
+		if (formData.password.length < 8) {
+			Alert.alert("Error", "Password must be at least 8 characters long.");
 			return;
 		}
 
@@ -80,7 +101,7 @@ export default function RegisterScreen() {
 			if (!result.data) {
 				Alert.alert(
 					"Sign-up failed",
-					String(result.error.value) || "Something went wrong.",
+					formatApiError(result.error?.value),
 				);
 				return;
 			}
