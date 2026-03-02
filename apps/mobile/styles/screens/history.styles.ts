@@ -59,16 +59,6 @@ export const styles = StyleSheet.create({
 		fontWeight: "900",
 		color: "#111",
 	},
-	summaryBody: {
-		marginTop: 8,
-		fontSize: 12,
-		color: "#666",
-		lineHeight: 17,
-	},
-	summaryEmphasis: {
-		color: "#D4002A",
-		fontWeight: "900",
-	},
 	emptyCard: {
 		backgroundColor: "#fff",
 		borderRadius: 18,
@@ -86,5 +76,10 @@ export const styles = StyleSheet.create({
 		fontSize: 13,
 		color: "#444",
 		lineHeight: 18,
+	},
+	centerBlock: {
+		flex: 1,
+		alignItems: "center",
+		justifyContent: "center",
 	},
 });

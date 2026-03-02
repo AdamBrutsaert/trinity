@@ -67,71 +67,74 @@ export default function PurchaseScreen() {
 		setToastVisible(true);
 	}, []);
 
-	const startPaymentFlow = useCallback(async (shipping: ShippingInfo) => {
-		setPageState({ status: "initializing" });
+	const startPaymentFlow = useCallback(
+		async (shipping: ShippingInfo) => {
+			setPageState({ status: "initializing" });
 
-		let orderId: string;
-		let approvalUrl: string;
+			let orderId: string;
+			let approvalUrl: string;
 
-		try {
-			const order = await createOrderMutation.mutateAsync({
-				returnUrl: RETURN_URL,
-				cancelUrl: CANCEL_URL,
-				shippingAddress: shipping.address,
-				shippingZipCode: shipping.zipCode,
-				shippingCity: shipping.city,
-				shippingCountry: shipping.country,
-			});
-			orderId = order.orderId;
-			approvalUrl = order.approvalUrl;
-		} catch (err) {
-			const message = extractErrorMessage(err, "Failed to create order");
-			setPageState({ status: "error", message });
-			showToast(message);
-			return;
-		}
+			try {
+				const order = await createOrderMutation.mutateAsync({
+					returnUrl: RETURN_URL,
+					cancelUrl: CANCEL_URL,
+					shippingAddress: shipping.address,
+					shippingZipCode: shipping.zipCode,
+					shippingCity: shipping.city,
+					shippingCountry: shipping.country,
+				});
+				orderId = order.orderId;
+				approvalUrl = order.approvalUrl;
+			} catch (err) {
+				const message = extractErrorMessage(err, "Failed to create order");
+				setPageState({ status: "error", message });
+				showToast(message);
+				return;
+			}
 
-		setPageState({ status: "awaiting_browser", orderId });
+			setPageState({ status: "awaiting_browser", orderId });
 
-		let browserResult: WebBrowser.WebBrowserAuthSessionResult;
-		try {
-			browserResult = await WebBrowser.openAuthSessionAsync(
-				approvalUrl,
-				// Matches both mobile://payment/success and mobile://payment/cancel
-				"mobile://payment",
-			);
-		} catch {
-			setPageState({ status: "error", message: "Unable to open browser" });
-			showToast("Unable to open browser");
-			return;
-		}
+			let browserResult: WebBrowser.WebBrowserAuthSessionResult;
+			try {
+				browserResult = await WebBrowser.openAuthSessionAsync(
+					approvalUrl,
+					// Matches both mobile://payment/success and mobile://payment/cancel
+					"mobile://payment",
+				);
+			} catch {
+				setPageState({ status: "error", message: "Unable to open browser" });
+				showToast("Unable to open browser");
+				return;
+			}
 
-		// User dismissed the browser without completing the flow
-		if (browserResult.type === "cancel" || browserResult.type === "dismiss") {
-			setPageState({ status: "cancelled" });
-			return;
-		}
+			// User dismissed the browser without completing the flow
+			if (browserResult.type === "cancel" || browserResult.type === "dismiss") {
+				setPageState({ status: "cancelled" });
+				return;
+			}
 
-		const redirectUrl =
-			browserResult.type === "success" ? browserResult.url : "";
+			const redirectUrl =
+				browserResult.type === "success" ? browserResult.url : "";
 
-		if (redirectUrl.startsWith(CANCEL_URL)) {
-			setPageState({ status: "cancelled" });
-			return;
-		}
+			if (redirectUrl.startsWith(CANCEL_URL)) {
+				setPageState({ status: "cancelled" });
+				return;
+			}
 
-		// Proceed to capture
-		setPageState({ status: "capturing" });
+			// Proceed to capture
+			setPageState({ status: "capturing" });
 
-		try {
-			await captureOrderMutation.mutateAsync(orderId);
-			setPageState({ status: "success" });
-		} catch (err) {
-			const message = extractErrorMessage(err, "Failed to confirm payment");
-			setPageState({ status: "error", message });
-			showToast(message);
-		}
-	}, [createOrderMutation, captureOrderMutation, showToast]);
+			try {
+				await captureOrderMutation.mutateAsync(orderId);
+				setPageState({ status: "success" });
+			} catch (err) {
+				const message = extractErrorMessage(err, "Failed to confirm payment");
+				setPageState({ status: "error", message });
+				showToast(message);
+			}
+		},
+		[createOrderMutation, captureOrderMutation, showToast],
+	);
 
 	const handleConfirmShipping = useCallback(() => {
 		const errors: Record<string, string> = {};

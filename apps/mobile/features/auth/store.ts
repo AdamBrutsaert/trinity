@@ -8,6 +8,7 @@ const TOKEN_KEY = "@trinity_token";
 const PROFILE_KEY = "@trinity_profile";
 
 export interface User {
+	id: string;
 	email: string;
 	firstName: string;
 	lastName: string;
@@ -66,6 +67,7 @@ export function useLogin() {
 		onSuccess: async (response) => {
 			if (response.data) {
 				const user: User = {
+					id: response.data.user.id,
 					email: response.data.user.email,
 					firstName: response.data.user.firstName,
 					lastName: response.data.user.lastName,
@@ -108,6 +110,7 @@ export function useRegister() {
 		onSuccess: async (response) => {
 			if (response.data) {
 				const user: User = {
+					id: response.data.user.id,
 					email: response.data.user.email,
 					firstName: response.data.user.firstName,
 					lastName: response.data.user.lastName,
@@ -180,7 +183,9 @@ export function useUpdateProfile() {
 		},
 		onSuccess: async (response, variables) => {
 			if (response.data) {
+				const existingUser = useAuthStore.getState().user;
 				const user: User = {
+					id: existingUser?.id ?? "",
 					email: response.data.email,
 					firstName: response.data.firstName,
 					lastName: response.data.lastName,

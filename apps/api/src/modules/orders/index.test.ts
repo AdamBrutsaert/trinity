@@ -238,12 +238,9 @@ describe("Orders module", () => {
 		it("should return 400 for empty cart", async () => {
 			const customerToken = await createCustomerUser(connection);
 
-			const response = await api.orders.post(
-				validShippingBody,
-				{
-					headers: { Authorization: `Bearer ${customerToken}` },
-				},
-			);
+			const response = await api.orders.post(validShippingBody, {
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
 
 			expect(response.status).toBe(400);
 			// Note: Elysia may not populate response.data for 400 status
@@ -276,12 +273,9 @@ describe("Orders module", () => {
 			await addItemToCart(connection, userId, product1.id, 2);
 			await addItemToCart(connection, userId, product2.id, 3);
 
-			const response = await api.orders.post(
-				validShippingBody,
-				{
-					headers: { Authorization: `Bearer ${customerToken}` },
-				},
-			);
+			const response = await api.orders.post(validShippingBody, {
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
 
 			expect(response.status).toBe(200);
 			expect(response.data).toHaveProperty("orderId", "MOCK_PAYPAL_ORDER_ID");
@@ -357,12 +351,9 @@ describe("Orders module", () => {
 
 			await addItemToCart(connection, userId, product.id, 1);
 
-			const response = await api.orders.post(
-				validShippingBody,
-				{
-					headers: { Authorization: `Bearer ${customerToken}` },
-				},
-			);
+			const response = await api.orders.post(validShippingBody, {
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
 
 			expect(response.status).toBe(200);
 
@@ -416,12 +407,9 @@ describe("Orders module", () => {
 
 			await addItemToCart(connection, userId, product.id, 1);
 
-			const response = await api.orders.post(
-				validShippingBody,
-				{
-					headers: { Authorization: `Bearer ${customerToken}` },
-				},
-			);
+			const response = await api.orders.post(validShippingBody, {
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
 
 			expect(response.status).toBe(502);
 
@@ -482,12 +470,9 @@ describe("Orders module", () => {
 			await addItemToCart(connection, user2.id, product2.id, 3);
 
 			// Create order for customer 1
-			const response = await api.orders.post(
-				validShippingBody,
-				{
-					headers: { Authorization: `Bearer ${customerToken}` },
-				},
-			);
+			const response = await api.orders.post(validShippingBody, {
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
 
 			expect(response.status).toBe(200);
 
@@ -534,12 +519,9 @@ describe("Orders module", () => {
 			// Add 10 items
 			await addItemToCart(connection, userId, product.id, 10);
 
-			const response = await api.orders.post(
-				validShippingBody,
-				{
-					headers: { Authorization: `Bearer ${customerToken}` },
-				},
-			);
+			const response = await api.orders.post(validShippingBody, {
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
 
 			expect(response.status).toBe(200);
 
@@ -582,10 +564,9 @@ describe("Orders module", () => {
 			await addItemToCart(connection, userId, product.id, 1);
 
 			// First create the order to get a pending invoice
-			const createResponse = await api.orders.post(
-				validShippingBody,
-				{ headers: { Authorization: `Bearer ${customerToken}` } },
-			);
+			const createResponse = await api.orders.post(validShippingBody, {
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
 			expect(createResponse.status).toBe(200);
 
 			// Verify invoice is pending
@@ -652,10 +633,9 @@ describe("Orders module", () => {
 			const userId = users[0]!.id;
 			await addItemToCart(connection, userId, product.id, 1);
 
-			const createResponse = await api.orders.post(
-				validShippingBody,
-				{ headers: { Authorization: `Bearer ${customerToken}` } },
-			);
+			const createResponse = await api.orders.post(validShippingBody, {
+				headers: { Authorization: `Bearer ${customerToken}` },
+			});
 			expect(createResponse.status).toBe(200);
 
 			// Override mock to return a non-COMPLETED status for capture

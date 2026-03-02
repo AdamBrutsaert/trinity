@@ -10,22 +10,14 @@ export const styles = StyleSheet.create({
 	},
 	topRow: {
 		flexDirection: "row",
-		alignItems: "flex-start",
+		alignItems: "center",
 		justifyContent: "space-between",
 		gap: 12,
 	},
-	topLeft: {
-		flex: 1,
-	},
-	store: {
-		fontSize: 14,
-		fontWeight: "900",
-		color: "#111",
-	},
 	date: {
-		marginTop: 4,
-		fontSize: 12,
-		color: "#666",
+		fontSize: 14,
+		fontWeight: "700",
+		color: "#111",
 	},
 	badge: {
 		borderRadius: 999,
@@ -43,44 +35,21 @@ export const styles = StyleSheet.create({
 		borderColor: "#111",
 		backgroundColor: "rgba(17, 17, 17, 0.06)",
 	},
-	badgeRefunded: {
-		borderColor: "#666",
-		backgroundColor: "rgba(102, 102, 102, 0.08)",
-	},
 	badgeText: {
 		fontSize: 11,
 		fontWeight: "900",
 		letterSpacing: 0.4,
 		color: "#111",
 	},
-	midRow: {
-		marginTop: 10,
-		flexDirection: "row",
-		alignItems: "baseline",
-		justifyContent: "space-between",
-		gap: 12,
-	},
 	total: {
-		fontSize: 18,
+		marginTop: 10,
+		fontSize: 20,
 		fontWeight: "900",
 		color: "#111",
 	},
-	itemsCount: {
-		fontSize: 12,
-		color: "#666",
-	},
-	preview: {
-		marginTop: 8,
-		fontSize: 12,
-		color: "#444",
-	},
-	cta: {
-		marginTop: 10,
-		fontSize: 12,
-		color: "#666",
-	},
-	ctaEmphasis: {
-		color: "#D4002A",
-		fontWeight: "900",
+	orderId: {
+		marginTop: 4,
+		fontSize: 11,
+		color: "#AAA",
 	},
 });

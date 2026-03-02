@@ -100,6 +100,61 @@ function getInvoicesByUserIdRoute(database: DatabasePlugin) {
 		);
 }
 
+function getInvoiceByIdRoute(database: DatabasePlugin) {
+	return new Elysia()
+		.use(database)
+		.use(authGuard("customer"))
+		.get(
+			"/:id",
+			async ({ params, userId, role, database }) => {
+				const result = await database.transaction(async (tx) =>
+					service.getInvoiceById(tx, params.id),
+				);
+				return result.match(
+					(invoice) => {
+						if (role === "customer" && invoice.userId !== userId) {
+							return status(403, "Forbidden" satisfies models.forbidden);
+						}
+						return status(200, {
+							...invoice,
+							createdAt: invoice.createdAt.toISOString(),
+							updatedAt: invoice.updatedAt.toISOString(),
+							items: invoice.items.map((item) => ({
+								...item,
+								createdAt: item.createdAt.toISOString(),
+							})),
+						});
+					},
+					(err) => {
+						switch (err.type) {
+							case "invoice_not_found":
+								return status(
+									404,
+									"Invoice not found" satisfies models.invoiceNotFound,
+								);
+							case "failed_to_fetch_invoice":
+								return status(
+									500,
+									"Failed to fetch invoice" satisfies models.failedToFetchInvoice,
+								);
+							default:
+								assertNever(err);
+						}
+					},
+				);
+			},
+			{
+				params: z.object({ id: z.uuidv4() }),
+				response: {
+					200: models.invoiceWithItemsResponse,
+					403: models.forbidden,
+					404: models.invoiceNotFound,
+					500: models.failedToFetchInvoice,
+				},
+			},
+		);
+}
+
 function createInvoiceRoute(database: DatabasePlugin) {
 	return new Elysia()
 		.use(database)
@@ -263,6 +318,7 @@ export function createInvoicesModule(database: DatabasePlugin) {
 	})
 		.use(getInvoicesRoute(database))
 		.use(getInvoicesByUserIdRoute(database))
+		.use(getInvoiceByIdRoute(database))
 		.use(createInvoiceRoute(database))
 		.use(updateInvoiceRoute(database))
 		.use(deleteInvoiceRoute(database));

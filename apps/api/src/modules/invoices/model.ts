@@ -17,19 +17,16 @@ export const invoiceResponse = z.object({
 	paypalOrderId: z.string(),
 	status: z.enum(["pending", "completed"]),
 	totalAmount: z.string(),
+	shippingAddress: z.string().nullable(),
+	shippingZipCode: z.string().nullable(),
+	shippingCity: z.string().nullable(),
+	shippingCountry: z.string().nullable(),
 	createdAt: z.iso.datetime(),
 	updatedAt: z.iso.datetime(),
 });
 export type invoiceResponse = z.infer<typeof invoiceResponse>;
 
-export const invoiceWithItemsResponse = z.object({
-	id: z.string(),
-	userId: z.string(),
-	paypalOrderId: z.string(),
-	status: z.enum(["pending", "completed"]),
-	totalAmount: z.string(),
-	createdAt: z.iso.datetime(),
-	updatedAt: z.iso.datetime(),
+export const invoiceWithItemsResponse = invoiceResponse.extend({
 	items: z.array(invoiceItemResponse),
 });
 export type invoiceWithItemsResponse = z.infer<typeof invoiceWithItemsResponse>;

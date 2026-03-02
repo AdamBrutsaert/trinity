@@ -789,4 +789,148 @@ describe("Invoices module", () => {
 			expect(response.data?.[1]?.paypalOrderId).toBe("PAYPAL-ORDER-1");
 		});
 	});
+
+	describe("GET /:id", () => {
+		it("should return 401 for unauthenticated requests", async () => {
+			const response = await api
+				.invoices({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.get();
+			expect(response.status).toBe(401);
+		});
+
+		it("should return 403 when customer tries to access another user's invoice", async () => {
+			const adminToken = await createAdminUser(connection);
+			const { userId: userId1 } = await createCustomerUser(
+				connection,
+				"customer1@example.com",
+			);
+			const { token: token2 } = await createCustomerUser(
+				connection,
+				"customer2@example.com",
+			);
+			const product = await setupTestProduct(connection);
+
+			const createResponse = await api.invoices.post(
+				{
+					userId: userId1,
+					paypalOrderId: "PAYPAL-ORDER-123",
+					status: "pending",
+					totalAmount: "10.00",
+					items: [
+						{
+							productId: product.id,
+							productName: product.name,
+							unitPrice: product.price,
+							quantity: 1,
+						},
+					],
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(createResponse.status).toBe(201);
+			// biome-ignore lint/style/noNonNullAssertion: status checked above
+			const invoiceId = createResponse.data!.id;
+
+			const response = await api
+				.invoices({ id: invoiceId })
+				.get({ headers: { Authorization: `Bearer ${token2}` } });
+
+			expect(response.status).toBe(403);
+		});
+
+		it("should allow a customer to fetch their own invoice with items", async () => {
+			const adminToken = await createAdminUser(connection);
+			const { userId, token: customerToken } = await createCustomerUser(
+				connection,
+				"customer@example.com",
+			);
+			const product = await setupTestProduct(connection);
+
+			const createResponse = await api.invoices.post(
+				{
+					userId,
+					paypalOrderId: "PAYPAL-ORDER-456",
+					status: "completed",
+					totalAmount: "30.00",
+					items: [
+						{
+							productId: product.id,
+							productName: product.name,
+							unitPrice: product.price,
+							quantity: 3,
+						},
+					],
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(createResponse.status).toBe(201);
+			// biome-ignore lint/style/noNonNullAssertion: status checked above
+			const invoiceId = createResponse.data!.id;
+
+			const response = await api
+				.invoices({ id: invoiceId })
+				.get({ headers: { Authorization: `Bearer ${customerToken}` } });
+
+			expect(response.status).toBe(200);
+			expect(response.data?.id).toBe(invoiceId);
+			expect(response.data?.paypalOrderId).toBe("PAYPAL-ORDER-456");
+			expect(response.data?.status).toBe("completed");
+			expect(response.data?.totalAmount).toBe("30.00");
+			expect(response.data?.shippingAddress).toBeNull();
+			expect(response.data?.items).toHaveLength(1);
+			expect(response.data?.items[0]).toMatchObject({
+				productName: product.name,
+				unitPrice: product.price,
+				quantity: 3,
+			});
+		});
+
+		it("should allow admin to fetch any invoice", async () => {
+			const adminToken = await createAdminUser(connection);
+			const { userId } = await createCustomerUser(
+				connection,
+				"customer@example.com",
+			);
+			const product = await setupTestProduct(connection);
+
+			const createResponse = await api.invoices.post(
+				{
+					userId,
+					paypalOrderId: "PAYPAL-ORDER-789",
+					status: "pending",
+					totalAmount: "15.00",
+					items: [
+						{
+							productId: product.id,
+							productName: product.name,
+							unitPrice: product.price,
+							quantity: 1,
+						},
+					],
+				},
+				{ headers: { Authorization: `Bearer ${adminToken}` } },
+			);
+			expect(createResponse.status).toBe(201);
+			// biome-ignore lint/style/noNonNullAssertion: status checked above
+			const invoiceId = createResponse.data!.id;
+
+			const response = await api
+				.invoices({ id: invoiceId })
+				.get({ headers: { Authorization: `Bearer ${adminToken}` } });
+
+			expect(response.status).toBe(200);
+			expect(response.data?.id).toBe(invoiceId);
+			expect(response.data?.items).toHaveLength(1);
+		});
+
+		it("should return 404 for non-existing invoice", async () => {
+			const adminToken = await createAdminUser(connection);
+
+			const response = await api
+				.invoices({ id: "e66dbdb0-97af-4edf-ad90-fbb749a52ee5" })
+				.get({ headers: { Authorization: `Bearer ${adminToken}` } });
+
+			expect(response.status).toBe(404);
+		});
+	});
 });

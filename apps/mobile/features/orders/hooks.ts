@@ -38,9 +38,23 @@ export function useCreateOrder() {
 	const { token } = useAuthStore();
 
 	return useMutation<CreateOrderResponse, Error, CreateOrderParams>({
-		mutationFn: async ({ returnUrl, cancelUrl, shippingAddress, shippingZipCode, shippingCity, shippingCountry }) => {
+		mutationFn: async ({
+			returnUrl,
+			cancelUrl,
+			shippingAddress,
+			shippingZipCode,
+			shippingCity,
+			shippingCountry,
+		}) => {
 			const response = await client.orders.post(
-				{ returnUrl, cancelUrl, shippingAddress, shippingZipCode, shippingCity, shippingCountry },
+				{
+					returnUrl,
+					cancelUrl,
+					shippingAddress,
+					shippingZipCode,
+					shippingCity,
+					shippingCountry,
+				},
 				{ headers: { Authorization: `Bearer ${token}` } },
 			);
 

@@ -352,21 +352,26 @@ export function createCartPaypalOrder(
 ) {
 	return getCartTotalPrice(tx, userId).andThen((total) => {
 		const totalString = total.toFixed(2);
-		return createPaypalOrder(totalString, "USD", shippingInfo, appContext).andThen(
-			(paypalOrder) => {
-				const approvalLink = paypalOrder.links.find(
-					(link) => link.rel === "approve",
-				);
-				if (!approvalLink) {
-					return errAsync({
-						type: "invalid_response",
-					} satisfies CreatePaypalOrderError as CreatePaypalOrderError);
-				}
-				return createInvoice(tx, userId, paypalOrder.id, total, shippingInfo).map(() => ({
+		return createPaypalOrder(
+			totalString,
+			"USD",
+			shippingInfo,
+			appContext,
+		).andThen((paypalOrder) => {
+			const approvalLink = paypalOrder.links.find(
+				(link) => link.rel === "approve",
+			);
+			if (!approvalLink) {
+				return errAsync({
+					type: "invalid_response",
+				} satisfies CreatePaypalOrderError as CreatePaypalOrderError);
+			}
+			return createInvoice(tx, userId, paypalOrder.id, total, shippingInfo).map(
+				() => ({
 					orderId: paypalOrder.id,
 					approvalUrl: approvalLink.href,
-				}));
-			},
-		);
+				}),
+			);
+		});
 	});
 }

@@ -77,13 +77,10 @@ export default function AccountManagementScreen() {
 		const nextEmail = typeof user?.email === "string" ? user.email : "";
 		const nextPhone =
 			typeof user?.phoneNumber === "string" ? user.phoneNumber : "";
-		const nextAddress =
-			typeof user?.address === "string" ? user.address : "";
-		const nextZipCode =
-			typeof user?.zipCode === "string" ? user.zipCode : "";
+		const nextAddress = typeof user?.address === "string" ? user.address : "";
+		const nextZipCode = typeof user?.zipCode === "string" ? user.zipCode : "";
 		const nextCity = typeof user?.city === "string" ? user.city : "";
-		const nextCountry =
-			typeof user?.country === "string" ? user.country : "";
+		const nextCountry = typeof user?.country === "string" ? user.country : "";
 
 		setAvatarId(nextAvatar);
 		setFirstName(nextFirst);
@@ -144,7 +141,18 @@ export default function AccountManagementScreen() {
 			now.city !== base.city ||
 			now.country !== base.country
 		);
-	}, [avatarId, baseline, email, firstName, lastName, phoneNumber, address, zipCode, city, country]);
+	}, [
+		avatarId,
+		baseline,
+		email,
+		firstName,
+		lastName,
+		phoneNumber,
+		address,
+		zipCode,
+		city,
+		country,
+	]);
 
 	const avatarSource = useMemo(
 		() => getProfileAvatarSource(avatarId),
