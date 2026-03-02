@@ -48,4 +48,6 @@ function computeApiBaseUrl(): string {
 	return `http://localhost:${API_PORT}`;
 }
 
-export const client = treaty<typeof App>(computeApiBaseUrl());
+export const apiBaseUrl = computeApiBaseUrl();
+
+export const client = treaty<typeof App>(apiBaseUrl);
