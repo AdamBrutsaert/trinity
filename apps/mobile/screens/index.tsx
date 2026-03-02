@@ -15,6 +15,8 @@ import { HomeDealsRecommendationsSection } from "@/components/home-deals-recomme
 import { HomeHeader } from "@/components/home-header";
 import { HomeNotificationsSection } from "@/components/home-notifications-section";
 import { useAuthStore, useLogout } from "@/features/auth/store";
+import { useRecommendations } from "@/features/deals/hooks";
+import { useAddProductToCart } from "@/features/products/hooks";
 import { styles } from "@/styles/screens/home.styles";
 
 export default function HomeScreen() {
@@ -50,22 +52,17 @@ export default function HomeScreen() {
 		[],
 	);
 
-	const recommendations = useMemo(
-		() => [
-			{
-				id: "rec-1",
-				title: "Coffee beans",
-				reason: "Often bought with your recent baskets",
-			},
-			{
-				id: "rec-2",
-				title: "Whole wheat pasta",
-				reason: "Recommended based on your history",
-			},
-			{ id: "rec-3", title: "Almond milk", reason: "Trending this week" },
-		],
-		[],
-	);
+	const recommendationsQuery = useRecommendations();
+	const addToCart = useAddProductToCart();
+
+	const recommendations = useMemo(() => {
+		const items = recommendationsQuery.data?.data ?? [];
+		return items.slice(0, 3).map((r) => ({
+			id: r.id,
+			title: r.name,
+			reason: r.reason,
+		}));
+	}, [recommendationsQuery.data]);
 
 	const handleLogout = () => {
 		logout.mutate();
@@ -158,9 +155,23 @@ export default function HomeScreen() {
 						onPressQuickPicks={() =>
 							router.push({ pathname: "/deals", params: { open: "forYou" } })
 						}
-						onPressRecommendation={(recommendation) =>
-							comingSoon(recommendation.title)
-						}
+						onPressRecommendation={(recommendation) => {
+							addToCart.mutate(
+								{ productId: recommendation.id, quantity: 1 },
+								{
+									onSuccess: () =>
+										Alert.alert(
+											"Added to cart",
+											recommendation.title,
+										),
+									onError: () =>
+										Alert.alert(
+											"Error",
+											"Failed to add item to cart",
+										),
+								},
+							);
+						}}
 					/>
 				</ScrollView>
 
