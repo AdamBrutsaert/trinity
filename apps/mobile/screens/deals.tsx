@@ -12,7 +12,9 @@ import {
 	type DealProductRowModel,
 } from "@/components/deal-product-row";
 import { DealsSectionCard } from "@/components/deals-section-card";
-import { getFakePromos, getFakeQuickPicks } from "@/lib/fake-deals";
+import { useAddProductToCart } from "@/features/products/hooks";
+import { useDeals, useRecommendations } from "@/features/deals/hooks";
+import { apiBaseUrl } from "@/lib/api";
 import { styles } from "@/styles/screens/deals.styles";
 
 type DealsOpenSection = "promos" | "forYou" | null;
@@ -34,8 +36,15 @@ export default function DealsScreen() {
 	const [toastVisible, setToastVisible] = useState(false);
 	const [toastMessage, setToastMessage] = useState("");
 
-	const promos = useMemo(() => getFakePromos(), []);
-	const quickPicks = useMemo(() => getFakeQuickPicks(), []);
+	const dealsQuery = useDeals();
+	const recommendationsQuery = useRecommendations();
+	const addToCart = useAddProductToCart();
+
+	const promos = useMemo(() => dealsQuery.data?.data ?? [], [dealsQuery.data]);
+	const quickPicks = useMemo(
+		() => recommendationsQuery.data?.data ?? [],
+		[recommendationsQuery.data],
+	);
 
 	const openPromos = openSection === "promos";
 	const openForYou = openSection === "forYou";
@@ -48,10 +57,24 @@ export default function DealsScreen() {
 		setOpenSection((current) => (current === "forYou" ? null : "forYou"));
 	}, []);
 
-	const onAdd = useCallback((item: DealProductRowModel) => {
-		setToastMessage(`${item.name} (UI-only for now)`);
-		setToastVisible(true);
-	}, []);
+	const onAdd = useCallback(
+		(item: DealProductRowModel) => {
+		addToCart.mutate(
+			{ productId: item.id, quantity: 1 },
+			{
+				onSuccess: () => {
+					setToastMessage(`${item.name} added to cart`);
+					setToastVisible(true);
+				},
+				onError: () => {
+					setToastMessage(`Failed to add ${item.name}`);
+					setToastVisible(true);
+				},
+			},
+		);
+		},
+		[addToCart],
+	);
 
 	return (
 		<SafeAreaView style={styles.container}>
@@ -80,11 +103,10 @@ export default function DealsScreen() {
 				>
 					<View style={styles.hintCard}>
 						<Text style={styles.hintLabel}>DEALS & RECOMMENDATIONS</Text>
-						<Text style={styles.hintTitle}>Personalized, but UI-only</Text>
+						<Text style={styles.hintTitle}>Personalized picks</Text>
 						<Text style={styles.hintBody}>
-							The API isn’t connected yet. For now you can browse fake data for{" "}
-							<Text style={styles.hintEmphasis}>Promos</Text> and{" "}
-							<Text style={styles.hintEmphasis}>For you</Text>.
+							Deals come from current promotions. Recommendations are based on your
+							purchase history.
 						</Text>
 					</View>
 
@@ -96,6 +118,14 @@ export default function DealsScreen() {
 						open={openPromos}
 						onPress={onTogglePromos}
 					>
+						{dealsQuery.isLoading ? (
+							<Text style={styles.hintBody}>Loading promos…</Text>
+						) : null}
+						{dealsQuery.isError ? (
+							<Text style={styles.hintBody}>
+								Failed to load promos (API: {apiBaseUrl}).
+							</Text>
+						) : null}
 						{promos.map((p) => (
 							<DealProductRow
 								key={p.id}
@@ -120,6 +150,14 @@ export default function DealsScreen() {
 						open={openForYou}
 						onPress={onToggleForYou}
 					>
+						{recommendationsQuery.isLoading ? (
+							<Text style={styles.hintBody}>Loading recommendations…</Text>
+						) : null}
+						{recommendationsQuery.isError ? (
+							<Text style={styles.hintBody}>
+								Failed to load recommendations (API: {apiBaseUrl}).
+							</Text>
+						) : null}
 						{quickPicks.map((q) => (
 							<DealProductRow
 								key={q.id}
