@@ -54,10 +54,10 @@ const app = new Elysia()
 	.use(createCategoriesModule(databasePlugin))
 	.use(createProductsModule(databasePlugin))
 	.use(createDealsModule(databasePlugin))
+	.use(createRecommendationsModule(databasePlugin))
 	.use(createCartModule(databasePlugin))
 	.use(createOrdersModule(databasePlugin))
 	.use(createInvoicesModule(databasePlugin))
-	.use(createRecommendationsModule(databasePlugin))
 	.use(createReportsModule(databasePlugin));
 
 export default app;
