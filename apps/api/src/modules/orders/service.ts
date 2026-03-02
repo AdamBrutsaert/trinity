@@ -69,7 +69,16 @@ function getPaypalAccessToken() {
 
 export type CreatePaypalOrderError = GetAccessTokenError;
 
-function createPaypalOrder(amount: string, currency: string) {
+type ApplicationContext = {
+	returnUrl: string;
+	cancelUrl: string;
+};
+
+function createPaypalOrder(
+	amount: string,
+	currency: string,
+	appContext?: ApplicationContext,
+) {
 	return getPaypalAccessToken().andThen((accessToken) => {
 		return ResultAsync.fromPromise(
 			fetch(`${env.PAYPAL_BASE_URL}/v2/checkout/orders`, {
@@ -88,6 +97,13 @@ function createPaypalOrder(amount: string, currency: string) {
 							},
 						},
 					],
+					...(appContext && {
+						application_context: {
+							return_url: appContext.returnUrl,
+							cancel_url: appContext.cancelUrl,
+							user_action: "PAY_NOW",
+						},
+					}),
 				}),
 			}),
 			(_error) =>
@@ -315,12 +331,25 @@ export function captureCartPaypalOrder(tx: Database, paypalOrderId: string) {
 	});
 }
 
-export function createCartPaypalOrder(tx: Database, userId: string) {
+export function createCartPaypalOrder(
+	tx: Database,
+	userId: string,
+	appContext?: ApplicationContext,
+) {
 	return getCartTotalPrice(tx, userId).andThen((total) => {
 		const totalString = total.toFixed(2);
-		return createPaypalOrder(totalString, "EUR").andThen((paypalOrder) => {
+		return createPaypalOrder(totalString, "EUR", appContext).andThen((paypalOrder) => {
+			const approvalLink = paypalOrder.links.find(
+				(link) => link.rel === "approve",
+			);
+			if (!approvalLink) {
+				return errAsync({
+					type: "invalid_response",
+				} satisfies CreatePaypalOrderError as CreatePaypalOrderError);
+			}
 			return createInvoice(tx, userId, paypalOrder.id, total).map(() => ({
 				orderId: paypalOrder.id,
+				approvalUrl: approvalLink.href,
 			}));
 		});
 	});

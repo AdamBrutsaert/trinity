@@ -13,12 +13,20 @@ export function createOrderRoute(database: DatabasePlugin) {
 		.use(authGuard("customer"))
 		.post(
 			"/",
-			async ({ status, userId, database }) => {
+			async ({ status, userId, database, body }) => {
+				const appContext =
+					body.returnUrl && body.cancelUrl
+						? { returnUrl: body.returnUrl, cancelUrl: body.cancelUrl }
+						: undefined;
 				const result = await database.transaction(async (tx) =>
-					service.createCartPaypalOrder(tx, userId),
+					service.createCartPaypalOrder(tx, userId, appContext),
 				);
 				return result.match(
-					(response) => status(200, { orderId: response.orderId }),
+					(response) =>
+						status(200, {
+							orderId: response.orderId,
+							approvalUrl: response.approvalUrl,
+						}),
 					(error) => {
 						switch (error.type) {
 							case "fetch_error":
@@ -70,6 +78,7 @@ export function createOrderRoute(database: DatabasePlugin) {
 				);
 			},
 			{
+				body: models.createOrderRequest,
 				response: {
 					200: models.createOrderResponse,
 					400: models.emptyCart,

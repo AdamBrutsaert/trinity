@@ -10,11 +10,25 @@ export type getPaypalAccessTokenSchema = z.infer<
 export const createPaypalOrderSchema = z.object({
 	id: z.string(),
 	status: z.literal("CREATED"),
+	links: z.array(
+		z.object({
+			href: z.string(),
+			rel: z.string(),
+			method: z.string().optional(),
+		}),
+	),
 });
 export type createPaypalOrderSchema = z.infer<typeof createPaypalOrderSchema>;
 
+export const createOrderRequest = z.object({
+	returnUrl: z.string().optional(),
+	cancelUrl: z.string().optional(),
+});
+export type createOrderRequest = z.infer<typeof createOrderRequest>;
+
 export const createOrderResponse = z.object({
 	orderId: z.string(),
+	approvalUrl: z.string(),
 });
 export type createOrderResponse = z.infer<typeof createOrderResponse>;
 

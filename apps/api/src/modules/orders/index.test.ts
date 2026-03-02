@@ -198,6 +198,13 @@ describe("Orders module", () => {
 					JSON.stringify({
 						id: "MOCK_PAYPAL_ORDER_ID",
 						status: "CREATED",
+						links: [
+							{
+								href: "https://www.sandbox.paypal.com/checkoutnow?token=MOCK_PAYPAL_ORDER_ID",
+								rel: "approve",
+								method: "GET",
+							},
+						],
 					}),
 					{ status: 201 },
 				);
@@ -217,7 +224,7 @@ describe("Orders module", () => {
 
 	describe("POST /", () => {
 		it("should return 401 for unauthenticated requests", async () => {
-			const response = await api.orders.post();
+			const response = await api.orders.post({});
 			expect(response.status).toBe(401);
 		});
 
@@ -271,6 +278,10 @@ describe("Orders module", () => {
 
 			expect(response.status).toBe(200);
 			expect(response.data).toHaveProperty("orderId", "MOCK_PAYPAL_ORDER_ID");
+			expect(response.data).toHaveProperty(
+				"approvalUrl",
+				"https://www.sandbox.paypal.com/checkoutnow?token=MOCK_PAYPAL_ORDER_ID",
+			);
 
 			// Verify invoice was created
 			const invoices = await connection
