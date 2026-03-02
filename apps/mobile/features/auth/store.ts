@@ -65,6 +65,11 @@ export function useLogin() {
 			useAuthStore.setState({ loading: true });
 		},
 		onSuccess: async (response) => {
+			if (!response.data) {
+				useAuthStore.setState({ loading: false });
+				return;
+			}
+
 			if (response.data) {
 				const user: User = {
 					id: response.data.user.id,
@@ -90,6 +95,12 @@ export function useLogin() {
 				});
 			}
 		},
+		onError: () => {
+			useAuthStore.setState({ loading: false });
+		},
+		onSettled: () => {
+			useAuthStore.setState({ loading: false });
+		},
 	});
 }
 
@@ -108,6 +119,11 @@ export function useRegister() {
 			useAuthStore.setState({ loading: true });
 		},
 		onSuccess: async (response) => {
+			if (!response.data) {
+				useAuthStore.setState({ loading: false });
+				return;
+			}
+
 			if (response.data) {
 				const user: User = {
 					id: response.data.user.id,
@@ -132,6 +148,12 @@ export function useRegister() {
 					loading: false,
 				});
 			}
+		},
+		onError: () => {
+			useAuthStore.setState({ loading: false });
+		},
+		onSettled: () => {
+			useAuthStore.setState({ loading: false });
 		},
 	});
 }
