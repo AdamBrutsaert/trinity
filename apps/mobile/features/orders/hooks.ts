@@ -54,10 +54,9 @@ export function useCaptureOrder() {
 
 	return useMutation<CaptureOrderResponse, Error, string>({
 		mutationFn: async (orderId: string) => {
-			const response = await client.orders({ orderId }).capture.post(
-				{},
-				{ headers: { Authorization: `Bearer ${token}` } },
-			);
+			const response = await client
+				.orders({ orderId })
+				.capture.post({}, { headers: { Authorization: `Bearer ${token}` } });
 
 			if (response.status !== 200) {
 				throw new Error("Failed to capture order");

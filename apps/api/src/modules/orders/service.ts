@@ -338,19 +338,21 @@ export function createCartPaypalOrder(
 ) {
 	return getCartTotalPrice(tx, userId).andThen((total) => {
 		const totalString = total.toFixed(2);
-		return createPaypalOrder(totalString, "EUR", appContext).andThen((paypalOrder) => {
-			const approvalLink = paypalOrder.links.find(
-				(link) => link.rel === "approve",
-			);
-			if (!approvalLink) {
-				return errAsync({
-					type: "invalid_response",
-				} satisfies CreatePaypalOrderError as CreatePaypalOrderError);
-			}
-			return createInvoice(tx, userId, paypalOrder.id, total).map(() => ({
-				orderId: paypalOrder.id,
-				approvalUrl: approvalLink.href,
-			}));
-		});
+		return createPaypalOrder(totalString, "USD", appContext).andThen(
+			(paypalOrder) => {
+				const approvalLink = paypalOrder.links.find(
+					(link) => link.rel === "approve",
+				);
+				if (!approvalLink) {
+					return errAsync({
+						type: "invalid_response",
+					} satisfies CreatePaypalOrderError as CreatePaypalOrderError);
+				}
+				return createInvoice(tx, userId, paypalOrder.id, total).map(() => ({
+					orderId: paypalOrder.id,
+					approvalUrl: approvalLink.href,
+				}));
+			},
+		);
 	});
 }
