@@ -12,6 +12,10 @@ export interface User {
 	firstName: string;
 	lastName: string;
 	phoneNumber: string | null;
+	address: string | null;
+	zipCode: string | null;
+	city: string | null;
+	country: string | null;
 	avatarId: number | null;
 	role: "customer" | "admin";
 }
@@ -66,6 +70,10 @@ export function useLogin() {
 					firstName: response.data.user.firstName,
 					lastName: response.data.user.lastName,
 					phoneNumber: response.data.user.phoneNumber,
+					address: response.data.user.address,
+					zipCode: response.data.user.zipCode,
+					city: response.data.user.city,
+					country: response.data.user.country,
 					avatarId: null,
 					role: response.data.user.role,
 				};
@@ -104,6 +112,10 @@ export function useRegister() {
 					firstName: response.data.user.firstName,
 					lastName: response.data.user.lastName,
 					phoneNumber: response.data.user.phoneNumber || null,
+					address: response.data.user.address ?? null,
+					zipCode: response.data.user.zipCode ?? null,
+					city: response.data.user.city ?? null,
+					country: response.data.user.country ?? null,
 					avatarId: null,
 					role: response.data.user.role,
 				};
@@ -146,6 +158,10 @@ export function useUpdateProfile() {
 			firstName: string;
 			lastName: string;
 			phoneNumber: string | null;
+			address: string | null;
+			zipCode: string | null;
+			city: string | null;
+			country: string | null;
 			avatarId: number | null;
 		}) => {
 			return client.users.me.put(
@@ -154,10 +170,10 @@ export function useUpdateProfile() {
 					firstName: data.firstName,
 					lastName: data.lastName,
 					phoneNumber: data.phoneNumber,
-					address: null,
-					zipCode: null,
-					city: null,
-					country: null,
+					address: data.address,
+					zipCode: data.zipCode,
+					city: data.city,
+					country: data.country,
 				},
 				{ headers: { Authorization: `Bearer ${token}` } },
 			);
@@ -169,6 +185,10 @@ export function useUpdateProfile() {
 					firstName: response.data.firstName,
 					lastName: response.data.lastName,
 					phoneNumber: response.data.phoneNumber,
+					address: response.data.address,
+					zipCode: response.data.zipCode,
+					city: response.data.city,
+					country: response.data.country,
 					avatarId: variables.avatarId,
 					role: response.data.role,
 				};

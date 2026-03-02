@@ -48,6 +48,10 @@ export default function AccountManagementScreen() {
 		lastName: string;
 		email: string;
 		phone: string;
+		address: string;
+		zipCode: string;
+		city: string;
+		country: string;
 	} | null>(null);
 	const [saveBarHeight, setSaveBarHeight] = useState(86);
 
@@ -56,6 +60,10 @@ export default function AccountManagementScreen() {
 	const [lastName, setLastName] = useState("");
 	const [email, setEmail] = useState("");
 	const [phoneNumber, setPhoneNumber] = useState("");
+	const [address, setAddress] = useState("");
+	const [zipCode, setZipCode] = useState("");
+	const [city, setCity] = useState("");
+	const [country, setCountry] = useState("");
 
 	const [saving, setSaving] = useState(false);
 	const [toastVisible, setToastVisible] = useState(false);
@@ -69,12 +77,23 @@ export default function AccountManagementScreen() {
 		const nextEmail = typeof user?.email === "string" ? user.email : "";
 		const nextPhone =
 			typeof user?.phoneNumber === "string" ? user.phoneNumber : "";
+		const nextAddress =
+			typeof user?.address === "string" ? user.address : "";
+		const nextZipCode =
+			typeof user?.zipCode === "string" ? user.zipCode : "";
+		const nextCity = typeof user?.city === "string" ? user.city : "";
+		const nextCountry =
+			typeof user?.country === "string" ? user.country : "";
 
 		setAvatarId(nextAvatar);
 		setFirstName(nextFirst);
 		setLastName(nextLast);
 		setEmail(nextEmail);
 		setPhoneNumber(nextPhone);
+		setAddress(nextAddress);
+		setZipCode(nextZipCode);
+		setCity(nextCity);
+		setCountry(nextCountry);
 
 		setBaseline({
 			avatarId: nextAvatar,
@@ -82,6 +101,10 @@ export default function AccountManagementScreen() {
 			lastName: nextLast,
 			email: nextEmail,
 			phone: nextPhone,
+			address: nextAddress,
+			zipCode: nextZipCode,
+			city: nextCity,
+			country: nextCountry,
 		});
 	}, [user]);
 
@@ -94,6 +117,10 @@ export default function AccountManagementScreen() {
 			lastName: lastName.trim(),
 			email: email.trim(),
 			phone: phoneNumber.trim(),
+			address: address.trim(),
+			zipCode: zipCode.trim(),
+			city: city.trim(),
+			country: country.trim(),
 		};
 		const base = {
 			avatarId: baseline.avatarId,
@@ -101,15 +128,23 @@ export default function AccountManagementScreen() {
 			lastName: baseline.lastName.trim(),
 			email: baseline.email.trim(),
 			phone: baseline.phone.trim(),
+			address: baseline.address.trim(),
+			zipCode: baseline.zipCode.trim(),
+			city: baseline.city.trim(),
+			country: baseline.country.trim(),
 		};
 
 		return (
 			now.avatarId !== base.avatarId ||
 			now.firstName !== base.firstName ||
 			now.lastName !== base.lastName ||
-			now.phone !== base.phone
+			now.phone !== base.phone ||
+			now.address !== base.address ||
+			now.zipCode !== base.zipCode ||
+			now.city !== base.city ||
+			now.country !== base.country
 		);
-	}, [avatarId, baseline, email, firstName, lastName, phoneNumber]);
+	}, [avatarId, baseline, email, firstName, lastName, phoneNumber, address, zipCode, city, country]);
 
 	const avatarSource = useMemo(
 		() => getProfileAvatarSource(avatarId),
@@ -142,6 +177,10 @@ export default function AccountManagementScreen() {
 				firstName: firstName.trim() || user?.firstName || "",
 				lastName: lastName.trim() || user?.lastName || "",
 				phoneNumber: phoneNumber.trim() || user?.phoneNumber || null,
+				address: address.trim() || null,
+				zipCode: zipCode.trim() || null,
+				city: city.trim() || null,
+				country: country.trim() || null,
 			});
 
 			setBaseline({
@@ -150,6 +189,10 @@ export default function AccountManagementScreen() {
 				lastName,
 				email,
 				phone: phoneNumber,
+				address,
+				zipCode,
+				city,
+				country,
 			});
 			showToast("Profile updated");
 		} catch (e) {
@@ -164,6 +207,10 @@ export default function AccountManagementScreen() {
 		firstName,
 		lastName,
 		phoneNumber,
+		address,
+		zipCode,
+		city,
+		country,
 		isDirty,
 		showToast,
 		updateProfile,
@@ -258,6 +305,41 @@ export default function AccountManagementScreen() {
 								placeholder="Optional"
 								autoCapitalize="none"
 								keyboardType="phone-pad"
+							/>
+						</View>
+					</View>
+
+					<View style={styles.card}>
+						<Text style={styles.cardTitle}>SHIPPING</Text>
+						<View style={styles.fields}>
+							<ProfileTextField
+								label="Address"
+								value={address}
+								onChangeText={setAddress}
+								placeholder="123 Main St"
+								autoCapitalize="words"
+							/>
+							<ProfileTextField
+								label="ZIP / Postal code"
+								value={zipCode}
+								onChangeText={setZipCode}
+								placeholder="12345"
+								autoCapitalize="none"
+								keyboardType="default"
+							/>
+							<ProfileTextField
+								label="City"
+								value={city}
+								onChangeText={setCity}
+								placeholder="Paris"
+								autoCapitalize="words"
+							/>
+							<ProfileTextField
+								label="Country"
+								value={country}
+								onChangeText={setCountry}
+								placeholder="France"
+								autoCapitalize="words"
 							/>
 						</View>
 					</View>
