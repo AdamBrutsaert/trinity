@@ -416,20 +416,20 @@ Database Error (PostgreSQL)
 ```mermaid
 stateDiagram-v2
     [*] --> SubmitRegistration: POST /auth/register
-    
+
     SubmitRegistration --> ValidateInput: Receive request
     ValidateInput --> CheckEmailExists: Input valid
     ValidateInput --> Return400: Input invalid
-    
+
     CheckEmailExists --> HashPassword: Email available
     CheckEmailExists --> Return409: Email exists
-    
+
     HashPassword --> CreateUserRecord: bcrypt hash
     CreateUserRecord --> GenerateJWT: User created
     CreateUserRecord --> Return500: DB error
-    
+
     GenerateJWT --> Return201: Token + User data
-    
+
     Return400 --> [*]
     Return409 --> [*]
     Return500 --> [*]
@@ -477,7 +477,7 @@ sequenceDiagram
     CartService->>Database: SELECT cart items
     Database-->>CartService: Cart data
     CartService-->>OrderService: Cart items + total
-    
+
     alt Cart is empty
         OrderService-->>API: Err(empty_cart)
         API-->>Customer: 400 Cart is empty
@@ -500,7 +500,7 @@ sequenceDiagram
     Database-->>CartService: Cart cleared
     InvoiceService->>Database: COMMIT TRANSACTION
     InvoiceService-->>OrderService: Invoice created
-    
+
     OrderService-->>API: Result<{orderId}>
     API-->>Customer: 200 OK {orderId: "paypal_order_id"}
 
@@ -515,25 +515,25 @@ flowchart TD
     Login --> AuthCheck{Valid credentials?}
     AuthCheck -->|No| AuthFail[401 Unauthorized]
     AuthCheck -->|Yes| GetToken[Receive JWT with role=admin]
-    
+
     GetToken --> CreateProduct[POST /products<br/>Authorization: Bearer token]
     CreateProduct --> ValidateToken{Token valid?}
     ValidateToken -->|No| Unauth[401 Unauthorized]
     ValidateToken -->|Yes| CheckRole{Role = admin?}
     CheckRole -->|No| Forbidden[403 Forbidden]
     CheckRole -->|Yes| ValidateInput{Input valid?}
-    
+
     ValidateInput -->|No| BadRequest[400 Bad Request]
     ValidateInput -->|Yes| CheckBrand{Brand exists?}
     CheckBrand -->|No| BrandNotFound[404 Brand not found]
     CheckBrand -->|Yes| CheckCategory{Category exists?}
     CheckCategory -->|No| CategoryNotFound[404 Category not found]
     CheckCategory -->|Yes| CheckBarcode{Barcode unique?}
-    
+
     CheckBarcode -->|No| Conflict[409 Product already exists]
     CheckBarcode -->|Yes| InsertProduct[INSERT INTO products]
     InsertProduct --> Success[201 Created<br/>Return product data]
-    
+
     Success --> End([Product created])
     AuthFail --> End
     Unauth --> End
@@ -542,7 +542,7 @@ flowchart TD
     BrandNotFound --> End
     CategoryNotFound --> End
     Conflict --> End
-    
+
     style Start fill:#e3f2fd
     style Success fill:#c8e6c9
     style End fill:#e3f2fd
@@ -562,7 +562,7 @@ flowchart LR
     subgraph Input
         A[Admin requests reports<br/>GET /reports]
     end
-    
+
     subgraph Authentication
         B[Verify JWT token]
         C{Role = admin?}
@@ -570,36 +570,36 @@ flowchart LR
         C -->|No| D[403 Forbidden]
         C -->|Yes| E[Proceed]
     end
-    
+
     subgraph "Data Aggregation (Parallel Queries)"
         E --> F[Query 1:<br/>Order Statistics]
         E --> G[Query 2:<br/>Customer Count]
         E --> H[Query 3:<br/>Top Products]
-        
+
         F --> I[SELECT SUM, COUNT<br/>FROM invoices<br/>GROUP BY status]
         G --> J[SELECT COUNT<br/>FROM users<br/>WHERE role='customer']
         H --> K[SELECT product, SUM<br/>FROM invoice_items<br/>JOIN invoices<br/>GROUP BY product<br/>LIMIT 10]
     end
-    
+
     subgraph "Data Processing"
         I --> L[Calculate:<br/>- Total revenue<br/>- Completed orders<br/>- Pending orders]
         J --> M[Total customers]
         K --> N[Top 10 products<br/>by quantity sold]
-        
+
         L --> O[Compute average<br/>order value]
         M --> O
         N --> O
     end
-    
+
     subgraph Output
         O --> P[Aggregate results]
         P --> Q[Return JSON:<br/>- totalRevenue<br/>- totalOrders<br/>- completedOrders<br/>- pendingOrders<br/>- totalCustomers<br/>- averageOrderValue<br/>- topProducts]
     end
-    
+
     A --> B
     D --> R[End]
     Q --> R
-    
+
     style A fill:#e3f2fd
     style Q fill:#c8e6c9
     style D fill:#ffcdd2
@@ -702,19 +702,19 @@ erDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> Unauthenticated
-    
+
     Unauthenticated --> Authenticated: Login/Register
     Authenticated --> Unauthenticated: Token expires (2h)
-    
+
     state Authenticated {
         [*] --> BrowseProducts
-        
+
         BrowseProducts --> ViewProduct: Select product
         ViewProduct --> AddToCart: Add to cart
         ViewProduct --> BrowseProducts: Back
-        
+
         AddToCart --> CartManagement: Item added
-        
+
         state CartManagement {
             [*] --> ViewCart
             ViewCart --> UpdateQuantity: Change quantity
@@ -723,9 +723,9 @@ stateDiagram-v2
             UpdateQuantity --> ViewCart
             RemoveItem --> ViewCart
         }
-        
+
         CartManagement --> CreateOrder: Checkout confirmed
-        
+
         state CreateOrder {
             [*] --> ValidateCart
             ValidateCart --> CalculateTotal: Cart not empty
@@ -735,16 +735,16 @@ stateDiagram-v2
             GenerateInvoice --> ClearCart: Invoice saved
             ClearCart --> [*]: Order complete
         }
-        
+
         CreateOrder --> ViewHistory: Order placed
         ViewHistory --> ViewInvoice: Select invoice
         ViewInvoice --> ViewHistory: Back
-        
+
         state if_admin <<choice>>
         BrowseProducts --> if_admin: Admin actions
         if_admin --> AdminPanel: role = admin
         if_admin --> BrowseProducts: role = customer
-        
+
         state AdminPanel {
             [*] --> ManageProducts
             ManageProducts --> CreateProduct
@@ -753,20 +753,20 @@ stateDiagram-v2
             ManageProducts --> ManageBrands
             ManageProducts --> ManageCategories
             ManageProducts --> ViewReports
-            
+
             CreateProduct --> ManageProducts
             UpdateProduct --> ManageProducts
             DeleteProduct --> ManageProducts
             ManageBrands --> ManageProducts
             ManageCategories --> ManageProducts
-            
+
             ViewReports --> AnalyzeSales: Generate reports
             AnalyzeSales --> ViewReports
         }
-        
+
         AdminPanel --> BrowseProducts: Exit admin
     }
-    
+
     Authenticated --> [*]: Logout
     Unauthenticated --> [*]: Exit
 ```
@@ -825,7 +825,7 @@ stateDiagram-v2
 
 **Caching Strategy**: None implemented (stateless architecture suitable for serverless)
 
-**Concurrency**: 
+**Concurrency**:
 - Upsert pattern for cart operations (handles concurrent updates)
 - Optimistic locking not required (no long-running transactions)
 
