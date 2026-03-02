@@ -23,6 +23,10 @@ export type createPaypalOrderSchema = z.infer<typeof createPaypalOrderSchema>;
 export const createOrderRequest = z.object({
 	returnUrl: z.string().optional(),
 	cancelUrl: z.string().optional(),
+	shippingAddress: z.string(),
+	shippingZipCode: z.string(),
+	shippingCity: z.string(),
+	shippingCountry: z.string(),
 });
 export type createOrderRequest = z.infer<typeof createOrderRequest>;
 

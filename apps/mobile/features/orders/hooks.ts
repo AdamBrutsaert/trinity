@@ -7,6 +7,10 @@ import { queryClient } from "@/screens/_layout";
 type CreateOrderParams = {
 	returnUrl: string;
 	cancelUrl: string;
+	shippingAddress: string;
+	shippingZipCode: string;
+	shippingCity: string;
+	shippingCountry: string;
 };
 
 type CreateOrderResponse = {
@@ -34,9 +38,9 @@ export function useCreateOrder() {
 	const { token } = useAuthStore();
 
 	return useMutation<CreateOrderResponse, Error, CreateOrderParams>({
-		mutationFn: async ({ returnUrl, cancelUrl }) => {
+		mutationFn: async ({ returnUrl, cancelUrl, shippingAddress, shippingZipCode, shippingCity, shippingCountry }) => {
 			const response = await client.orders.post(
-				{ returnUrl, cancelUrl },
+				{ returnUrl, cancelUrl, shippingAddress, shippingZipCode, shippingCity, shippingCountry },
 				{ headers: { Authorization: `Bearer ${token}` } },
 			);
 

@@ -116,6 +116,10 @@ export const invoicesTable = pgTable("invoices", (t) => ({
 	paypalOrderId: t.varchar("paypal_order_id", { length: 255 }).notNull(),
 	status: invoiceStatusEnum("status").default("pending").notNull(),
 	totalAmount: t.numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
+	shippingAddress: t.varchar("shipping_address", { length: 255 }),
+	shippingZipCode: t.varchar("shipping_zip_code", { length: 20 }),
+	shippingCity: t.varchar("shipping_city", { length: 100 }),
+	shippingCountry: t.varchar("shipping_country", { length: 100 }),
 	createdAt: t.timestamp("created_at").defaultNow().notNull(),
 	updatedAt: t.timestamp("updated_at").defaultNow().notNull(),
 }));

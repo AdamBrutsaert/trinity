@@ -8,6 +8,13 @@
       "when": 1772286461319,
       "tag": "0000_living_vulcan",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1772464229184,
+      "tag": "0001_square_ultimates",
+      "breakpoints": true
     }
   ]
 }

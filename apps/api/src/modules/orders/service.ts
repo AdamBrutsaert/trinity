@@ -74,9 +74,17 @@ type ApplicationContext = {
 	cancelUrl: string;
 };
 
+export type ShippingInfo = {
+	address: string;
+	zipCode: string;
+	city: string;
+	country: string;
+};
+
 function createPaypalOrder(
 	amount: string,
 	currency: string,
+	shippingInfo: ShippingInfo,
 	appContext?: ApplicationContext,
 ) {
 	return getPaypalAccessToken().andThen((accessToken) => {
@@ -154,6 +162,7 @@ function createInvoice(
 	userId: string,
 	paypalOrderId: string,
 	totalAmount: number,
+	shippingInfo: ShippingInfo,
 	status: "pending" | "completed" = "pending",
 ) {
 	// First, fetch cart items with product details
@@ -191,6 +200,10 @@ function createInvoice(
 						paypalOrderId,
 						status,
 						totalAmount: totalAmount.toFixed(2),
+						shippingAddress: shippingInfo.address,
+						shippingZipCode: shippingInfo.zipCode,
+						shippingCity: shippingInfo.city,
+						shippingCountry: shippingInfo.country,
 					})
 					.returning({
 						id: invoicesTable.id,
@@ -334,11 +347,12 @@ export function captureCartPaypalOrder(tx: Database, paypalOrderId: string) {
 export function createCartPaypalOrder(
 	tx: Database,
 	userId: string,
+	shippingInfo: ShippingInfo,
 	appContext?: ApplicationContext,
 ) {
 	return getCartTotalPrice(tx, userId).andThen((total) => {
 		const totalString = total.toFixed(2);
-		return createPaypalOrder(totalString, "USD", appContext).andThen(
+		return createPaypalOrder(totalString, "USD", shippingInfo, appContext).andThen(
 			(paypalOrder) => {
 				const approvalLink = paypalOrder.links.find(
 					(link) => link.rel === "approve",
@@ -348,7 +362,7 @@ export function createCartPaypalOrder(
 						type: "invalid_response",
 					} satisfies CreatePaypalOrderError as CreatePaypalOrderError);
 				}
-				return createInvoice(tx, userId, paypalOrder.id, total).map(() => ({
+				return createInvoice(tx, userId, paypalOrder.id, total, shippingInfo).map(() => ({
 					orderId: paypalOrder.id,
 					approvalUrl: approvalLink.href,
 				}));

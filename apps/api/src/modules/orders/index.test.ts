@@ -124,6 +124,13 @@ describe("Orders module", () => {
 	let connection: ReturnType<typeof createDatabaseConnection>;
 	let api: ReturnType<typeof treaty<ReturnType<typeof createOrdersModule>>>;
 
+	const validShippingBody = {
+		shippingAddress: "123 Test Street",
+		shippingZipCode: "75001",
+		shippingCity: "Paris",
+		shippingCountry: "FR",
+	};
+
 	// Mock fetch for PayPal API calls
 	const originalFetch = global.fetch;
 
@@ -224,7 +231,7 @@ describe("Orders module", () => {
 
 	describe("POST /", () => {
 		it("should return 401 for unauthenticated requests", async () => {
-			const response = await api.orders.post({});
+			const response = await api.orders.post(validShippingBody);
 			expect(response.status).toBe(401);
 		});
 
@@ -232,7 +239,7 @@ describe("Orders module", () => {
 			const customerToken = await createCustomerUser(connection);
 
 			const response = await api.orders.post(
-				{},
+				validShippingBody,
 				{
 					headers: { Authorization: `Bearer ${customerToken}` },
 				},
@@ -270,7 +277,7 @@ describe("Orders module", () => {
 			await addItemToCart(connection, userId, product2.id, 3);
 
 			const response = await api.orders.post(
-				{},
+				validShippingBody,
 				{
 					headers: { Authorization: `Bearer ${customerToken}` },
 				},
@@ -351,7 +358,7 @@ describe("Orders module", () => {
 			await addItemToCart(connection, userId, product.id, 1);
 
 			const response = await api.orders.post(
-				{},
+				validShippingBody,
 				{
 					headers: { Authorization: `Bearer ${customerToken}` },
 				},
@@ -410,7 +417,7 @@ describe("Orders module", () => {
 			await addItemToCart(connection, userId, product.id, 1);
 
 			const response = await api.orders.post(
-				{},
+				validShippingBody,
 				{
 					headers: { Authorization: `Bearer ${customerToken}` },
 				},
@@ -476,7 +483,7 @@ describe("Orders module", () => {
 
 			// Create order for customer 1
 			const response = await api.orders.post(
-				{},
+				validShippingBody,
 				{
 					headers: { Authorization: `Bearer ${customerToken}` },
 				},
@@ -528,7 +535,7 @@ describe("Orders module", () => {
 			await addItemToCart(connection, userId, product.id, 10);
 
 			const response = await api.orders.post(
-				{},
+				validShippingBody,
 				{
 					headers: { Authorization: `Bearer ${customerToken}` },
 				},
@@ -576,7 +583,7 @@ describe("Orders module", () => {
 
 			// First create the order to get a pending invoice
 			const createResponse = await api.orders.post(
-				{},
+				validShippingBody,
 				{ headers: { Authorization: `Bearer ${customerToken}` } },
 			);
 			expect(createResponse.status).toBe(200);
@@ -646,7 +653,7 @@ describe("Orders module", () => {
 			await addItemToCart(connection, userId, product.id, 1);
 
 			const createResponse = await api.orders.post(
-				{},
+				validShippingBody,
 				{ headers: { Authorization: `Bearer ${customerToken}` } },
 			);
 			expect(createResponse.status).toBe(200);

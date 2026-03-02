@@ -113,4 +113,46 @@ export const styles = StyleSheet.create({
 		fontWeight: "700",
 		fontSize: 15,
 	},
+	// Shipping form
+	formContainer: {
+		paddingVertical: 32,
+		gap: 0,
+	},
+	formTitle: {
+		fontSize: 26,
+		fontWeight: "900",
+		color: "#111",
+		marginBottom: 8,
+	},
+	formSubtitle: {
+		fontSize: 15,
+		color: "#666",
+		lineHeight: 22,
+		marginBottom: 28,
+	},
+	formFields: {
+		gap: 16,
+		marginBottom: 32,
+	},
+	fieldLabel: {
+		fontSize: 13,
+		fontWeight: "700",
+		color: "#444",
+		marginBottom: 6,
+		textTransform: "uppercase",
+		letterSpacing: 0.5,
+	},
+	fieldInput: {
+		backgroundColor: "#fff",
+		borderRadius: 12,
+		borderWidth: 1.5,
+		borderColor: "#E5E5EA",
+		paddingHorizontal: 16,
+		paddingVertical: 13,
+		fontSize: 16,
+		color: "#111",
+	},
+	fieldInputError: {
+		borderColor: "#FF3B30",
+	},
 });

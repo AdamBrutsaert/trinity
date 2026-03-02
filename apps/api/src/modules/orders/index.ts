@@ -18,8 +18,14 @@ export function createOrderRoute(database: DatabasePlugin) {
 					body.returnUrl && body.cancelUrl
 						? { returnUrl: body.returnUrl, cancelUrl: body.cancelUrl }
 						: undefined;
+				const shippingInfo = {
+					address: body.shippingAddress,
+					zipCode: body.shippingZipCode,
+					city: body.shippingCity,
+					country: body.shippingCountry,
+				};
 				const result = await database.transaction(async (tx) =>
-					service.createCartPaypalOrder(tx, userId, appContext),
+					service.createCartPaypalOrder(tx, userId, shippingInfo, appContext),
 				);
 				return result.match(
 					(response) =>
