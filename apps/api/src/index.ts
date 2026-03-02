@@ -8,6 +8,7 @@ import { createAuthModule } from "./modules/auth";
 import { createBrandsModule } from "./modules/brands";
 import { createCartModule } from "./modules/cart";
 import { createCategoriesModule } from "./modules/categories";
+import { createDealsModule } from "./modules/deals";
 import {
 	createDatabaseConnection,
 	createDatabasePlugin,
@@ -16,6 +17,7 @@ import { createHealthModule } from "./modules/health";
 import { createInvoicesModule } from "./modules/invoices";
 import { createOrdersModule } from "./modules/orders";
 import { createProductsModule } from "./modules/products";
+import { createRecommendationsModule } from "./modules/recommendations";
 import { createReportsModule } from "./modules/reports";
 import { createUsersModule } from "./modules/users";
 
@@ -51,9 +53,11 @@ const app = new Elysia()
 	.use(createBrandsModule(databasePlugin))
 	.use(createCategoriesModule(databasePlugin))
 	.use(createProductsModule(databasePlugin))
+	.use(createDealsModule(databasePlugin))
 	.use(createCartModule(databasePlugin))
 	.use(createOrdersModule(databasePlugin))
 	.use(createInvoicesModule(databasePlugin))
+	.use(createRecommendationsModule(databasePlugin))
 	.use(createReportsModule(databasePlugin));
 
 export default app;
@@ -63,5 +67,8 @@ export default app;
 // and deployment in environments where the server is started separately (e.g., serverless platforms)
 const portResult = z.coerce.number().safeParse(process.env.PORT);
 if (portResult.success) {
-	app.listen(portResult.data);
+	app.listen({
+		port: portResult.data,
+		hostname: "0.0.0.0",
+	});
 }
