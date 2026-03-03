@@ -26,35 +26,6 @@ Primary user journeys:
 - **Testing**: Jest + jest-expo + @testing-library/react-native
 - **Lint/format**: Expo lint + Biome (repo-level)
 
-## High-Level Architecture
-
-```mermaid
-flowchart TD
-  subgraph UI[UI Layer]
-    Screens[Screens - expo-router]
-    Components[Reusable Components]
-  end
-
-  subgraph Data[Data Layer]
-    RQ[TanStack Query]
-    Hooks[Feature Hooks (useCartItems, useDeals, ...)]
-    Client[Eden Treaty client]
-  end
-
-  subgraph State[Local State]
-    Zustand[Zustand Auth Store]
-    Storage[AsyncStorage]
-  end
-
-  Screens --> Components
-  Screens --> Hooks
-  Hooks --> RQ
-  RQ --> Client
-  Zustand <--> Storage
-  Screens --> Zustand
-
-  Client --> API[(Trinity API - Elysia)]
-```
 
 ## Project Structure
 
